@@ -103,8 +103,12 @@
 
         <!-- User menu -->
         <button type="button" [matMenuTriggerFor]="userMenu" class="flex items-center gap-2 p-1.5 pl-2 rounded-lg hover:bg-surface-container">
-          <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center text-sm font-bold">
-            {{ (auth.user()?.firstName ?? 'U')[0] }}
+          <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center text-sm font-bold overflow-hidden">
+            @if (avatarUrl(); as url) {
+              <img [src]="url" [alt]="auth.user()?.firstName ?? 'User'" class="w-full h-full object-cover" />
+            } @else {
+              {{ (auth.user()?.firstName ?? 'U')[0] }}
+            }
           </div>
           <span class="hidden md:block text-sm font-semibold text-brand-navy">
             {{ auth.user()?.firstName }} {{ auth.user()?.lastName }}

@@ -3,8 +3,12 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl">
   <!-- Avatar -->
   <div class="bg-surface-container-lowest rounded-2xl shadow-custom p-6 text-center">
-    <div class="w-24 h-24 rounded-full bg-brand-orange text-white text-3xl font-extrabold flex items-center justify-center mx-auto mb-4">
-      {{ (form.controls.firstName.value || 'U')[0] }}
+    <div class="w-24 h-24 rounded-full bg-brand-orange text-white text-3xl font-extrabold flex items-center justify-center mx-auto mb-4 overflow-hidden">
+      @if (avatarUrl(); as url) {
+        <img [src]="url" [alt]="form.controls.firstName.value" class="w-full h-full object-cover" />
+      } @else {
+        {{ (form.controls.firstName.value || 'U')[0] }}
+      }
     </div>
     <h3 class="font-bold text-brand-navy">
       {{ form.controls.firstName.value }} {{ form.controls.lastName.value }}

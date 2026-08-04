@@ -90,7 +90,35 @@
 
       <!-- Right actions -->
       <div class="flex items-center gap-4 md:gap-6">
-        <a routerLink="/auth/login" class="hidden sm:block text-brand-navy text-sm font-semibold hover:text-brand-orange transition-colors">Login</a>
+        @if (auth.isAuthenticated()) {
+          <button type="button" [matMenuTriggerFor]="userMenu" class="hidden sm:flex items-center gap-2 p-1.5 pl-2 rounded-lg hover:bg-surface-container">
+            <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center text-sm font-bold overflow-hidden">
+              @if (avatarUrl(); as url) {
+                <img [src]="url" [alt]="auth.user()?.firstName ?? 'User'" class="w-full h-full object-cover" />
+              } @else {
+                {{ (auth.user()?.firstName ?? 'U')[0] }}
+              }
+            </div>
+            <span class="text-sm font-semibold text-brand-navy">
+              {{ auth.user()?.firstName }} {{ auth.user()?.lastName }}
+            </span>
+            <span class="material-symbols-outlined text-base text-secondary">expand_more</span>
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <a mat-menu-item routerLink="/app/profile">
+              <span class="material-symbols-outlined mr-2 align-middle">account_circle</span> My Profile
+            </a>
+            <a mat-menu-item routerLink="/app/settings">
+              <span class="material-symbols-outlined mr-2 align-middle">settings</span> Settings
+            </a>
+            <mat-divider />
+            <button mat-menu-item (click)="logout()">
+              <span class="material-symbols-outlined mr-2 align-middle text-error">logout</span> Logout
+            </button>
+          </mat-menu>
+        } @else {
+          <a routerLink="/auth/login" class="hidden sm:block text-brand-navy text-sm font-semibold hover:text-brand-orange transition-colors">Login</a>
+        }
         <a routerLink="/pricing" class="bg-brand-orange text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl text-[15px] font-semibold hover:shadow-lg hover:scale-105 transition-all">Order Now</a>
         <button type="button" (click)="toggleMobile()" class="md:hidden p-1 text-brand-navy" aria-label="Menu">
           <span class="material-symbols-outlined">{{ mobileOpen() ? 'close' : 'menu' }}</span>
@@ -105,7 +133,13 @@
         <a routerLink="/about" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">About Us</a>
         <a routerLink="/services" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Services</a>
         <a routerLink="/pricing" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Pricing</a>
-        <a routerLink="/auth/login" (click)="closeMenus()" class="block py-2 font-semibold text-primary">Login</a>
+        @if (auth.isAuthenticated()) {
+          <a routerLink="/app/profile" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">My Profile</a>
+          <a routerLink="/app/settings" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Settings</a>
+          <button type="button" (click)="logout()" class="block w-full text-left py-2 font-semibold text-primary">Logout</button>
+        } @else {
+          <a routerLink="/auth/login" (click)="closeMenus()" class="block py-2 font-semibold text-primary">Login</a>
+        }
       </div>
     }
   </nav>

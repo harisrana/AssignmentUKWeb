@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -14,6 +14,7 @@ import { SessionTimeoutService } from '../../core/services/session-timeout.servi
 import { AuthService } from '../../core/services/auth.service';
 import { AuthActions } from '../../features/auth/state/auth.actions';
 import { environment } from '../../../environments/environment';
+import { resolveAssetUrl } from '../../core/constants/api-endpoints';
 
 /**
  * Authenticated application shell: responsive sidenav with a dynamic,
@@ -48,6 +49,7 @@ export class MainLayoutComponent implements OnInit {
   protected readonly expanded = signal<Record<string, boolean>>({});
   protected readonly languages = environment.supportedLanguages;
   protected readonly currentLang = signal(this.translate.currentLang ?? environment.defaultLanguage);
+  protected readonly avatarUrl = computed(() => resolveAssetUrl(this.auth.user()?.avatarUrl));
 
   ngOnInit(): void {
     this.session.start();

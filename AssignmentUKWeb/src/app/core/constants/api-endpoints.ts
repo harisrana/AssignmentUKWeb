@@ -3,6 +3,21 @@ import { environment } from '../../../environments/environment';
 /** The API is versioned via the URL path: `/api/v1/...`. */
 const base = `${environment.apiUrl}/${environment.apiVersion}`;
 
+/** Origin the API is served from (apiUrl minus its trailing `/api` path), used to resolve server-relative asset URLs like avatars. */
+const apiOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+
+/**
+ * Resolves a server-relative asset path (e.g. `/uploads/xyz.png`) into an
+ * absolute URL. Passes already-absolute URLs and `data:` URIs (e.g. avatars,
+ * which the API returns as base64) through unchanged.
+ */
+export function resolveAssetUrl(path?: string | null): string | null {
+  if (!path) {
+    return null;
+  }
+  return /^(https?:|data:)/i.test(path) ? path : `${apiOrigin}${path}`;
+}
+
 /**
  * Centralised registry of every API endpoint used by the app.
  * Never hard-code URLs in services — reference them here.
