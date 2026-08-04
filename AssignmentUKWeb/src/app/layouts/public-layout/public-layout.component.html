@@ -1,0 +1,166 @@
+<div class="bg-background text-on-surface min-h-screen flex flex-col">
+  <!-- Top utility bar -->
+  <div class="bg-brand-navy text-white py-2 hidden md:block">
+    <div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center text-[12px] font-medium">
+      <div class="flex items-center gap-6">
+        <a href="tel:+442033320848" class="flex items-center gap-2 hover:text-brand-orange transition-colors">
+          <span class="material-symbols-outlined text-sm">call</span> +44 203 332 0848
+        </a>
+        <a href="mailto:support@assignmentwritings.uk" class="flex items-center gap-2 hover:text-brand-orange transition-colors">
+          <span class="material-symbols-outlined text-sm">mail</span> support&#64;assignmentwritings.uk
+        </a>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1 opacity-80">
+          <span class="material-symbols-outlined text-yellow-400" style="font-variation-settings: 'FILL' 1">star</span>
+          Trustpilot 4.9/5
+        </span>
+        <span class="flex items-center gap-1 opacity-80">
+          <span class="material-symbols-outlined text-green-400">verified_user</span> 100% Secure
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky navbar -->
+  <nav class="sticky top-0 z-50 bg-surface shadow-md">
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop w-full flex justify-between items-center h-20">
+      <a routerLink="/" class="font-headline-md text-[22px] font-bold text-brand-navy">
+        Assignment <span class="text-brand-orange font-semibold">Writings UK</span>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-8">
+        <a
+          routerLink="/"
+          routerLinkActive="text-primary font-bold border-b-2 border-primary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-secondary hover:text-primary transition-colors text-sm font-medium pb-1"
+        >Home</a>
+
+        <a
+          routerLink="/about"
+          routerLinkActive="text-primary font-bold border-b-2 border-primary"
+          class="text-secondary hover:text-primary transition-colors text-sm font-medium pb-1"
+        >About Us</a>
+
+        <!-- Services dropdown -->
+        <div class="relative" data-services-menu>
+          <button
+            type="button"
+            (click)="toggleServices()"
+            class="text-secondary hover:text-primary transition-colors text-sm font-medium flex items-center gap-1"
+            [class.text-primary]="servicesOpen()"
+          >
+            Services
+            <span class="material-symbols-outlined transition-transform" [class.rotate-180]="servicesOpen()">expand_more</span>
+          </button>
+
+          @if (servicesOpen()) {
+            <div class="absolute left-1/2 -translate-x-1/2 mt-4 w-80 bg-surface-container-lowest rounded-xl shadow-custom-hover border border-outline-variant/20 p-2 z-50">
+              @for (service of services; track service.slug) {
+                <a
+                  [routerLink]="['/services']"
+                  [fragment]="service.slug"
+                  (click)="closeMenus()"
+                  class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors"
+                >
+                  <span class="material-symbols-outlined text-brand-orange mt-0.5">{{ service.icon }}</span>
+                  <span>
+                    <span class="block font-bold text-sm text-brand-navy">{{ service.title }}</span>
+                    <span class="block text-xs text-secondary line-clamp-1">{{ service.summary }}</span>
+                  </span>
+                </a>
+              }
+              <a
+                routerLink="/services"
+                (click)="closeMenus()"
+                class="block text-center mt-1 py-2 text-sm font-bold text-primary hover:underline"
+              >View all services →</a>
+            </div>
+          }
+        </div>
+
+        <a
+          routerLink="/pricing"
+          routerLinkActive="text-primary font-bold border-b-2 border-primary"
+          class="text-secondary hover:text-primary transition-colors text-sm font-medium pb-1"
+        >Pricing</a>
+      </div>
+
+      <!-- Right actions -->
+      <div class="flex items-center gap-4 md:gap-6">
+        <a routerLink="/auth/login" class="hidden sm:block text-brand-navy text-sm font-semibold hover:text-brand-orange transition-colors">Login</a>
+        <a routerLink="/pricing" class="bg-brand-orange text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl text-[15px] font-semibold hover:shadow-lg hover:scale-105 transition-all">Order Now</a>
+        <button type="button" (click)="toggleMobile()" class="md:hidden p-1 text-brand-navy" aria-label="Menu">
+          <span class="material-symbols-outlined">{{ mobileOpen() ? 'close' : 'menu' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    @if (mobileOpen()) {
+      <div class="md:hidden border-t border-outline-variant/20 bg-surface px-margin-mobile py-4 space-y-2">
+        <a routerLink="/" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Home</a>
+        <a routerLink="/about" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">About Us</a>
+        <a routerLink="/services" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Services</a>
+        <a routerLink="/pricing" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Pricing</a>
+        <a routerLink="/auth/login" (click)="closeMenus()" class="block py-2 font-semibold text-primary">Login</a>
+      </div>
+    }
+  </nav>
+
+  <!-- Routed page -->
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-brand-navy text-white pt-20 pb-10">
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+      <div class="space-y-6">
+        <span class="font-headline-md text-headline-md font-extrabold text-white">Assignment <span class="text-brand-orange">Writings UK</span></span>
+        <p class="text-white/60 text-sm leading-relaxed">
+          The UK's leading provider of academic writing services. Helping students achieve their
+          dreams through expert support and personalized guidance.
+        </p>
+      </div>
+      <div>
+        <h4 class="font-bold text-lg mb-6">Our Services</h4>
+        <ul class="space-y-3 text-white/60 text-sm">
+          @for (service of services.slice(0, 5); track service.slug) {
+            <li>
+              <a [routerLink]="['/services']" [fragment]="service.slug" class="hover:text-brand-orange transition-colors">{{ service.title }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-lg mb-6">Quick Links</h4>
+        <ul class="space-y-3 text-white/60 text-sm">
+          <li><a routerLink="/about" class="hover:text-brand-orange transition-colors">About Us</a></li>
+          <li><a routerLink="/pricing" class="hover:text-brand-orange transition-colors">Pricing</a></li>
+          <li><a href="#" class="hover:text-brand-orange transition-colors">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-brand-orange transition-colors">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-brand-orange transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-lg mb-6">Safe Payments</h4>
+        <p class="text-white/60 text-sm mb-6">We accept all major credit cards and secure payment methods.</p>
+        <div class="flex flex-wrap gap-2">
+          @for (pay of ['VISA', 'MASTER', 'PAYPAL', 'STRIPE']; track pay) {
+            <div class="w-12 h-8 bg-white/10 rounded flex items-center justify-center text-[10px] font-bold">{{ pay }}</div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40">
+      <p>© {{ year }} Assignment Writings UK. All Rights Reserved.</p>
+      <div class="flex gap-6">
+        <span>Certified Plagiarism Free</span>
+        <span>GDPR Compliant</span>
+      </div>
+    </div>
+  </footer>
+</div>

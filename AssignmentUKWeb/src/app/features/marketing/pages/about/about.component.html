@@ -1,0 +1,92 @@
+<!-- Hero -->
+<section class="bg-white py-stack-lg">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="text-brand-orange font-bold uppercase tracking-widest text-sm mb-4 block">About Us</span>
+      <h1 class="font-display-lg text-[28px] md:text-[40px] text-brand-navy mb-6 leading-tight">
+        Your Trusted Partner in <span class="text-brand-orange">Academic Success</span>
+      </h1>
+      <p class="text-body-lg text-secondary mb-6">
+        For over a decade, Assignment Writings UK has helped millions of students achieve their
+        academic goals with bespoke, plagiarism-free writing support from qualified UK experts.
+      </p>
+      <a routerLink="/pricing" class="inline-block bg-brand-orange text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:brightness-95 transition-all">
+        Get Started
+      </a>
+    </div>
+    <img
+      class="w-full h-[420px] object-cover rounded-[2rem] shadow-2xl"
+      alt="Students collaborating in a modern UK university library."
+      src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=80"
+    />
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="bg-brand-navy py-12">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+    @for (stat of stats; track stat.label) {
+      <div>
+        <p class="font-display-lg text-4xl font-extrabold text-brand-orange">{{ stat.value }}</p>
+        <p class="text-white/70 text-sm mt-1">{{ stat.label }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="py-stack-lg">
+  <div class="max-w-3xl mx-auto px-margin-mobile text-center">
+    <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold text-brand-navy mb-4">Our Mission</h2>
+    <p class="text-secondary text-lg leading-relaxed">
+      We believe every student deserves a fair shot at success. Our mission is to remove the stress
+      of tight deadlines and complex briefs by pairing students with subject-matter experts who
+      deliver clear, original, high-quality work — on time, every time.
+    </p>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="py-stack-lg bg-surface-container-low">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+    <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold text-brand-navy text-center mb-12">What We Stand For</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (value of values; track value.title) {
+        <div class="bg-white p-8 rounded-2xl shadow-custom border border-outline-variant/10 text-center">
+          <span class="material-symbols-outlined text-brand-orange text-5xl mb-4">{{ value.icon }}</span>
+          <h3 class="font-bold text-lg text-brand-navy mb-2">{{ value.title }}</h3>
+          <p class="text-sm text-secondary">{{ value.text }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="py-stack-lg">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+    <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold text-brand-navy text-center mb-12">Meet the Leadership</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      @for (member of team; track member.name) {
+        <div class="bg-white p-8 rounded-2xl shadow-custom border border-outline-variant/10 text-center">
+          <img class="w-24 h-24 rounded-full object-cover mx-auto mb-4" [src]="member.avatar" [alt]="member.name" />
+          <h3 class="font-bold text-lg text-brand-navy">{{ member.name }}</h3>
+          <p class="text-sm text-brand-orange font-bold uppercase tracking-wider">{{ member.role }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-16">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+    <div class="orange-gradient rounded-[2rem] p-12 text-white text-center shadow-2xl">
+      <h2 class="font-display-lg-mobile md:text-display-lg font-bold mb-4">Ready to work with the best?</h2>
+      <p class="text-white/80 text-lg mb-8">Join millions of students who trust Assignment Writings UK.</p>
+      <a routerLink="/pricing" class="inline-block bg-brand-navy text-white px-10 py-4 rounded-xl font-bold text-lg shadow-xl hover:scale-105 transition-all">
+        View Pricing
+      </a>
+    </div>
+  </div>
+</section>

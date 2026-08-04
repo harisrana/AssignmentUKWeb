@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "اسائنمنٹ رائٹنگز یو کے",
+    "login": "لاگ ان",
+    "logout": "لاگ آؤٹ",
+    "save": "محفوظ کریں",
+    "cancel": "منسوخ کریں",
+    "delete": "حذف کریں",
+    "edit": "ترمیم",
+    "create": "بنائیں",
+    "search": "تلاش کریں",
+    "loading": "لوڈ ہو رہا ہے…",
+    "noResults": "کوئی ریکارڈ نہیں ملا۔"
+  },
+  "nav": {
+    "dashboard": "ڈیش بورڈ",
+    "users": "صارفین",
+    "roles": "کردار",
+    "permissions": "اجازتیں",
+    "settings": "ترتیبات",
+    "profile": "میری پروفائل"
+  },
+  "auth": {
+    "welcomeBack": "خوش آمدید",
+    "loginSubtitle": "اپنی اسائنمنٹس کا نظم کرنے کے لیے لاگ ان کریں",
+    "email": "ای میل ایڈریس",
+    "password": "پاس ورڈ",
+    "rememberMe": "مجھے یاد رکھیں",
+    "forgotPassword": "پاس ورڈ بھول گئے؟"
+  },
+  "dashboard": {
+    "totalOrders": "کل آرڈرز",
+    "activeWriters": "فعال مصنفین",
+    "revenue": "آمدنی",
+    "satisfaction": "اطمینان",
+    "recentOrders": "حالیہ آرڈرز"
+  }
+}

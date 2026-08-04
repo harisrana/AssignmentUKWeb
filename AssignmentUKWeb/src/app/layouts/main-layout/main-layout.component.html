@@ -1,0 +1,134 @@
+<mat-sidenav-container class="h-screen bg-surface-container-low">
+  <!-- Sidebar -->
+  <mat-sidenav
+    [opened]="sidenavOpen()"
+    [mode]="'side'"
+    class="w-64 bg-brand-navy text-white border-none"
+    [fixedInViewport]="false"
+  >
+    <div class="h-20 flex items-center px-6 border-b border-white/10">
+      <span class="font-headline-md text-lg font-extrabold text-white">
+        Assignment <span class="text-brand-orange">UK</span>
+      </span>
+    </div>
+
+    <nav class="p-3 space-y-1 overflow-y-auto">
+      @for (item of menuService.menu(); track item.label) {
+        @if (item.children && item.children.length) {
+          <button
+            type="button"
+            (click)="toggleGroup(item.label)"
+            class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
+          >
+            <span class="flex items-center gap-3">
+              <span class="material-symbols-outlined">{{ item.icon }}</span>
+              <span class="text-sm font-semibold">{{ item.label }}</span>
+            </span>
+            <span class="material-symbols-outlined text-base" [class.rotate-180]="isExpanded(item.label)">expand_more</span>
+          </button>
+          @if (isExpanded(item.label)) {
+            <div class="ml-4 pl-3 border-l border-white/10 space-y-1">
+              @for (child of item.children; track child.label) {
+                <a
+                  [routerLink]="child.route"
+                  routerLinkActive="bg-brand-orange text-white"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
+                >
+                  <span class="material-symbols-outlined text-base">{{ child.icon }}</span>
+                  <span class="text-sm">{{ child.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-brand-orange text-white"
+            [routerLinkActiveOptions]="{ exact: false }"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
+          >
+            <span class="material-symbols-outlined">{{ item.icon }}</span>
+            <span class="text-sm font-semibold">{{ item.label }}</span>
+          </a>
+        }
+      }
+    </nav>
+  </mat-sidenav>
+
+  <!-- Main content -->
+  <mat-sidenav-content class="flex flex-col">
+    <!-- Toolbar -->
+    <header class="h-16 bg-surface-container-lowest shadow-sm flex items-center justify-between px-4 md:px-6 sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="toggleSidenav()" class="p-2 rounded-lg hover:bg-surface-container transition-colors" aria-label="Toggle menu">
+          <span class="material-symbols-outlined text-brand-navy">menu</span>
+        </button>
+
+        <!-- Breadcrumbs -->
+        <nav class="hidden md:flex items-center gap-2 text-sm">
+          <a routerLink="/app/dashboard" class="text-secondary hover:text-primary">Home</a>
+          @for (crumb of breadcrumbs.breadcrumbs(); track crumb.url) {
+            <span class="material-symbols-outlined text-base text-secondary/40">chevron_right</span>
+            <a [routerLink]="crumb.url" class="text-secondary hover:text-primary">{{ crumb.label }}</a>
+          }
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-1 md:gap-2">
+        <!-- Language switcher -->
+        <button type="button" [matMenuTriggerFor]="langMenu" class="p-2 rounded-lg hover:bg-surface-container flex items-center gap-1" aria-label="Language">
+          <span class="material-symbols-outlined text-brand-navy">translate</span>
+          <span class="text-xs font-bold uppercase text-secondary">{{ currentLang() }}</span>
+        </button>
+        <mat-menu #langMenu="matMenu">
+          @for (lang of languages; track lang) {
+            <button mat-menu-item (click)="switchLanguage(lang)">{{ lang | uppercase }}</button>
+          }
+        </mat-menu>
+
+        <!-- Theme switch -->
+        <button type="button" (click)="toggleTheme()" class="p-2 rounded-lg hover:bg-surface-container" aria-label="Toggle theme">
+          <span class="material-symbols-outlined text-brand-navy">{{ theme.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+        </button>
+
+        <!-- Notification center -->
+        <button type="button" [matMenuTriggerFor]="notifMenu" class="p-2 rounded-lg hover:bg-surface-container relative" aria-label="Notifications">
+          <span class="material-symbols-outlined text-brand-navy">notifications</span>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-brand-orange rounded-full"></span>
+        </button>
+        <mat-menu #notifMenu="matMenu" class="w-80">
+          <div class="px-4 py-3 font-bold text-brand-navy border-b border-outline-variant/20">Notifications</div>
+          <div class="px-4 py-6 text-center text-sm text-secondary">You're all caught up 🎉</div>
+        </mat-menu>
+
+        <!-- User menu -->
+        <button type="button" [matMenuTriggerFor]="userMenu" class="flex items-center gap-2 p-1.5 pl-2 rounded-lg hover:bg-surface-container">
+          <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center text-sm font-bold">
+            {{ (auth.user()?.firstName ?? 'U')[0] }}
+          </div>
+          <span class="hidden md:block text-sm font-semibold text-brand-navy">
+            {{ auth.user()?.firstName }} {{ auth.user()?.lastName }}
+          </span>
+          <span class="material-symbols-outlined text-base text-secondary hidden md:inline">expand_more</span>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <a mat-menu-item routerLink="/app/profile">
+            <span class="material-symbols-outlined mr-2 align-middle">account_circle</span> My Profile
+          </a>
+          <a mat-menu-item routerLink="/app/settings">
+            <span class="material-symbols-outlined mr-2 align-middle">settings</span> Settings
+          </a>
+          <mat-divider />
+          <button mat-menu-item (click)="logout()">
+            <span class="material-symbols-outlined mr-2 align-middle text-error">logout</span> Logout
+          </button>
+        </mat-menu>
+      </div>
+    </header>
+
+    <!-- Routed content -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

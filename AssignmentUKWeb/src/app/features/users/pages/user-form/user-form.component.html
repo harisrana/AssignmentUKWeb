@@ -1,0 +1,66 @@
+<h2 mat-dialog-title class="!font-bold !text-brand-navy">
+  {{ isEdit ? 'Edit User' : 'Add New User' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="!pt-2">
+    <app-validation-summary [form]="form" [show]="form.touched" />
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="space-y-1.5">
+        <label class="text-sm font-semibold text-brand-navy">First Name</label>
+        <input formControlName="firstName" class="w-full px-3 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20" />
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-sm font-semibold text-brand-navy">Last Name</label>
+        <input formControlName="lastName" class="w-full px-3 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20" />
+      </div>
+    </div>
+
+    <div class="space-y-1.5 mt-4">
+      <label class="text-sm font-semibold text-brand-navy">Email</label>
+      <input formControlName="email" type="email" class="w-full px-3 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 disabled:bg-surface-container-low" />
+    </div>
+
+    @if (!isEdit) {
+      <div class="space-y-1.5 mt-4">
+        <label class="text-sm font-semibold text-brand-navy">Temporary Password</label>
+        <input formControlName="password" type="password" class="w-full px-3 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20" />
+      </div>
+    }
+
+    <div class="space-y-1.5 mt-4">
+      <label class="text-sm font-semibold text-brand-navy">Roles</label>
+      <div class="flex flex-wrap gap-2">
+        @for (role of allRoles; track role) {
+          <button
+            type="button"
+            (click)="toggleRole(role)"
+            class="px-3 py-1.5 rounded-full text-sm font-bold border transition-all"
+            [class.bg-brand-orange]="isRoleSelected(role)"
+            [class.text-white]="isRoleSelected(role)"
+            [class.border-brand-orange]="isRoleSelected(role)"
+            [class.text-secondary]="!isRoleSelected(role)"
+            [class.border-outline-variant]="!isRoleSelected(role)"
+          >
+            {{ role }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (isEdit) {
+      <label class="flex items-center gap-2 mt-4 cursor-pointer">
+        <input type="checkbox" formControlName="isActive" class="w-4 h-4 rounded text-primary" />
+        <span class="text-sm text-secondary">Account active</span>
+      </label>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="gap-2">
+    <button mat-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" type="submit">
+      {{ isEdit ? 'Save Changes' : 'Create User' }}
+    </button>
+  </mat-dialog-actions>
+</form>

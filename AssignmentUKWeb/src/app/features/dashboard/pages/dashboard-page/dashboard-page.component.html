@@ -1,0 +1,72 @@
+<app-page-header
+  [title]="'Welcome back, ' + (auth.user()?.firstName ?? 'there') + ' 👋'"
+  subtitle="Here's what's happening across your assignments today."
+/>
+
+<!-- KPI cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+  <app-stat-card
+    icon="assignment"
+    [value]="(store.stats()?.totalOrders ?? 0) | number"
+    label="Total Orders"
+    trend="12.4%"
+    iconBgClass="bg-brand-orange"
+  />
+  <app-stat-card
+    icon="groups"
+    [value]="(store.stats()?.activeWriters ?? 0) | number"
+    label="Active Writers"
+    trend="3.1%"
+    iconBgClass="bg-brand-navy"
+  />
+  <app-stat-card
+    icon="payments"
+    [value]="((store.stats()?.revenue ?? 0) | currency: 'GBP' : 'symbol' : '1.0-0') ?? '£0'"
+    label="Revenue (30d)"
+    trend="8.7%"
+    iconBgClass="bg-green-600"
+  />
+  <app-stat-card
+    icon="sentiment_very_satisfied"
+    [value]="(store.stats()?.satisfaction ?? 0) + '%'"
+    label="Satisfaction"
+    trend="0.4%"
+    iconBgClass="bg-purple-600"
+  />
+</div>
+
+<!-- Recent orders -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-custom border border-outline-variant/10 overflow-hidden">
+  <div class="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
+    <h2 class="font-bold text-brand-navy">Recent Orders</h2>
+    <a class="text-sm font-bold text-primary hover:underline" href="#">View all</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-secondary border-b border-outline-variant/20">
+          <th class="px-6 py-3 font-semibold">Order ID</th>
+          <th class="px-6 py-3 font-semibold">Subject</th>
+          <th class="px-6 py-3 font-semibold">Student</th>
+          <th class="px-6 py-3 font-semibold">Status</th>
+          <th class="px-6 py-3 font-semibold">Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of store.recentOrders(); track order.id) {
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low">
+            <td class="px-6 py-4 font-bold text-brand-navy">{{ order.id }}</td>
+            <td class="px-6 py-4">{{ order.subject }}</td>
+            <td class="px-6 py-4 text-secondary">{{ order.student }}</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold" [class]="statusClass(order.status)">
+                {{ order.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-secondary">{{ order.dueDate | date: 'dd MMM yyyy' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

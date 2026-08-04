@@ -1,0 +1,120 @@
+<!-- Header -->
+<section class="bg-white py-stack-lg">
+  <div class="max-w-3xl mx-auto px-margin-mobile text-center">
+    <span class="text-brand-orange font-bold uppercase tracking-widest text-sm mb-4 block">Pricing</span>
+    <h1 class="font-display-lg text-[28px] md:text-[40px] text-brand-navy mb-6">
+      Simple, Transparent <span class="text-brand-orange">Pricing</span>
+    </h1>
+    <p class="text-body-lg text-secondary">
+      Premium academic quality at student-friendly rates. No hidden costs — ever.
+    </p>
+  </div>
+</section>
+
+<!-- Tiers -->
+<section class="py-stack-lg bg-surface-container-low">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+    @for (tier of tiers; track tier.name) {
+      <div
+        class="rounded-2xl p-8 border transition-all flex flex-col"
+        [class.bg-brand-navy]="tier.featured"
+        [class.text-white]="tier.featured"
+        [class.shadow-custom-hover]="tier.featured"
+        [class.scale-105]="tier.featured"
+        [class.bg-white]="!tier.featured"
+        [class.shadow-custom]="!tier.featured"
+        [class.border-outline-variant]="!tier.featured"
+      >
+        @if (tier.featured) {
+          <span class="self-start px-3 py-1 rounded-full bg-brand-orange text-white text-xs font-bold uppercase mb-4">Most Popular</span>
+        }
+        <h3 class="font-bold text-xl mb-2" [class.text-brand-navy]="!tier.featured">{{ tier.name }}</h3>
+        <p class="mb-6">
+          <span class="font-display-lg text-4xl font-extrabold" [class.text-brand-navy]="!tier.featured">£{{ tier.perPage }}</span>
+          <span class="text-sm opacity-70">/ page</span>
+        </p>
+        <ul class="space-y-3 mb-8 flex-1">
+          @for (feature of tier.features; track feature) {
+            <li class="flex items-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-brand-orange">check_circle</span>
+              <span [class.text-secondary]="!tier.featured">{{ feature }}</span>
+            </li>
+          }
+        </ul>
+        <a
+          routerLink="/auth/login"
+          class="text-center py-3 rounded-xl font-bold transition-all"
+          [class.bg-brand-orange]="tier.featured"
+          [class.text-white]="tier.featured"
+          [class.border-2]="!tier.featured"
+          [class.border-brand-navy]="!tier.featured"
+          [class.text-brand-navy]="!tier.featured"
+          [class.hover:bg-brand-navy]="!tier.featured"
+        >Choose {{ tier.name }}</a>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Estimate calculator -->
+<section class="py-stack-lg">
+  <div class="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop">
+    <div class="bg-brand-navy text-white rounded-2xl p-8 md:p-12 shadow-2xl">
+      <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold mb-2">Estimate Your Price</h2>
+      <p class="text-white/70 mb-8">Adjust the options to get an instant estimate.</p>
+
+      <form [formGroup]="form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="space-y-2">
+          <label class="text-sm font-semibold opacity-80">Pages ({{ form.controls.pages.value }})</label>
+          <input type="range" min="1" max="50" formControlName="pages" class="w-full accent-brand-orange" />
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm font-semibold opacity-80">Academic Level</label>
+          <select formControlName="level" class="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white">
+            @for (lvl of levels; track lvl.label) {
+              <option class="text-black" [value]="lvl.multiplier">{{ lvl.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm font-semibold opacity-80">Package</label>
+          <select formControlName="tier" class="w-full bg-white/10 border border-white/20 rounded-xl p-3 text-white">
+            @for (tier of tiers; track tier.name) {
+              <option class="text-black" [value]="tier.perPage">{{ tier.name }} (£{{ tier.perPage }}/pg)</option>
+            }
+          </select>
+        </div>
+      </form>
+
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-6">
+        <div>
+          <p class="text-sm opacity-70">Estimated total</p>
+          <p class="font-display-lg text-4xl font-extrabold text-brand-orange">£{{ estimate() }}</p>
+        </div>
+        <a routerLink="/auth/login" class="bg-brand-orange text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-all">
+          Order Now
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-stack-lg bg-surface-container-low">
+  <div class="max-w-3xl mx-auto px-margin-mobile">
+    <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold text-brand-navy text-center mb-12">Pricing FAQs</h2>
+    <div class="space-y-4">
+      @for (faq of faqs(); track faq.question; let i = $index) {
+        <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+          <button type="button" (click)="toggleFaq(i)" class="w-full p-6 text-left flex justify-between items-center">
+            <span class="font-bold text-brand-navy">{{ faq.question }}</span>
+            <span class="material-symbols-outlined text-brand-orange transition-transform" [class.rotate-180]="faq.open">expand_more</span>
+          </button>
+          @if (faq.open) {
+            <div class="p-6 pt-0 text-secondary">{{ faq.answer }}</div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>

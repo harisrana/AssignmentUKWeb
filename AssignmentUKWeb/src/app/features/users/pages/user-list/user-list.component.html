@@ -1,0 +1,28 @@
+<app-page-header title="Users" subtitle="Manage staff, writers and customer accounts.">
+  <button
+    *appHasPermission="[permissions.usersCreate]"
+    mat-flat-button
+    color="primary"
+    (click)="openCreate()"
+  >
+    <span class="material-symbols-outlined align-middle mr-1">add</span>
+    Add User
+  </button>
+</app-page-header>
+
+<div class="mb-4">
+  <app-search-box placeholder="Search users…" (search)="onSearch($event)" />
+</div>
+
+<app-data-table
+  [columns]="columns"
+  [data]="users()"
+  [totalCount]="totalCount()"
+  [pageIndex]="query().pageIndex"
+  [pageSize]="query().pageSize"
+  [loading]="loading()"
+  [actions]="actions"
+  emptyMessage="No users found. Connect the API or add your first user."
+  (pageChange)="onPageChange($event)"
+  (actionClick)="onAction($event)"
+/>

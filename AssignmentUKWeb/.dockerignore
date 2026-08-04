@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.angular
+.vscode
+*.log
+coverage
+.github
+README.md
+Dockerfile
+.dockerignore
+**/*.spec.ts

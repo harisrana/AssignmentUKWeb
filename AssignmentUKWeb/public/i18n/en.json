@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "Assignment Writings UK",
+    "login": "Login",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading…",
+    "noResults": "No records found."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "settings": "Settings",
+    "profile": "My Profile"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "loginSubtitle": "Log in to manage your assignments",
+    "email": "Email Address",
+    "password": "Password",
+    "rememberMe": "Remember Me",
+    "forgotPassword": "Forgot Password?"
+  },
+  "dashboard": {
+    "totalOrders": "Total Orders",
+    "activeWriters": "Active Writers",
+    "revenue": "Revenue",
+    "satisfaction": "Satisfaction",
+    "recentOrders": "Recent Orders"
+  }
+}
