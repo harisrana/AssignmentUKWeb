@@ -23,13 +23,17 @@ export class App implements OnInit {
   private readonly auth = inject(AuthService);
 
   ngOnInit(): void {
-    // Restore session from a stored token immediately, so the header reflects
-    // the logged-in state on every route (not just guarded /app/** routes).
-    if (this.auth.restoreFromToken()) {
-      // The JWT only carries id/roles/permissions — hydrate the full profile
-      // (avatarUrl, bio, phone, ...) from the server in the background.
-      this.auth.loadCurrentUser().subscribe({ error: () => undefined });
-    }
+    // Restore session from a stored token immediately (refreshing it first if
+    // expired), so the header reflects the logged-in state on every route —
+    // not just guarded /app/** routes, and not just while the access token
+    // (15 min lifetime) happens to still be valid.
+    this.auth.tryRestoreSession().subscribe((restored) => {
+      if (restored) {
+        // The JWT only carries id/roles/permissions — hydrate the full profile
+        // (avatarUrl, bio, phone, ...) from the server in the background.
+        this.auth.loadCurrentUser().subscribe({ error: () => undefined });
+      }
+    });
 
     this.translate.addLangs([...environment.supportedLanguages]);
     this.translate.setDefaultLang(environment.defaultLanguage);

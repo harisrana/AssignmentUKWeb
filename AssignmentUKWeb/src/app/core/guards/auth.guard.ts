@@ -1,26 +1,23 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
+import { map } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { TokenService } from '../services/token.service';
 
 /**
  * Blocks access to routes unless a valid session exists. If an access token is
- * present it optimistically restores the user from its claims.
+ * present it optimistically restores the user from its claims; if only an
+ * expired access token plus a valid refresh token are present, it silently
+ * refreshes before deciding.
  */
 export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
-  const tokenService = inject(TokenService);
   const router = inject(Router);
 
-  if (auth.isAuthenticated()) {
-    return true;
-  }
-
-  if (tokenService.isAccessTokenValid() && auth.restoreFromToken()) {
-    return true;
-  }
-
-  return router.createUrlTree(['/auth/login'], {
-    queryParams: { returnUrl: state.url },
-  });
+  return auth.tryRestoreSession().pipe(
+    map((restored) =>
+      restored
+        ? true
+        : router.createUrlTree(['/auth/login'], { queryParams: { returnUrl: state.url } }),
+    ),
+  );
 };

@@ -13,6 +13,7 @@ export class MenuService {
 
   private readonly source: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard', permissions: [PERMISSIONS.dashboardView] },
+    { label: 'Live Chat', icon: 'chat', route: '/app/chat', permissions: [PERMISSIONS.chatManage] },
     {
       label: 'Administration',
       icon: 'admin_panel_settings',

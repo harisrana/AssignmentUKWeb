@@ -36,6 +36,12 @@ export const FEATURE_ROUTES: Routes = [
       import('./permissions/permissions.routes').then((m) => m.PERMISSIONS_ROUTES),
   },
   {
+    path: 'chat',
+    data: { breadcrumb: 'Live Chat', permissions: [PERMISSIONS.chatManage] },
+    canActivate: [permissionGuard],
+    loadChildren: () => import('./chat/chat.routes').then((m) => m.CHAT_ROUTES),
+  },
+  {
     path: 'settings',
     data: { breadcrumb: 'Settings', permissions: [PERMISSIONS.settingsManage] },
     canActivate: [permissionGuard],

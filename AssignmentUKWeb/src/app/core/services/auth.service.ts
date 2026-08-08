@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 import { BaseApiService } from './base-api.service';
 import { TokenService } from './token.service';
 import { API_ENDPOINTS } from '../constants/api-endpoints';
@@ -104,6 +104,8 @@ export class AuthService extends BaseApiService {
     if (!payload) {
       return false;
     }
+    const existing = this._user();
+    const existingMatches = existing?.id === payload.sub;
     this._user.set({
       id: payload.sub,
       email: payload.email,
@@ -112,8 +114,46 @@ export class AuthService extends BaseApiService {
       roles: claimToArray(payload.roles),
       permissions: claimToArray(payload.permissions),
       isActive: true,
+      // Preserve fields the JWT doesn't carry (hydrated separately via /me)
+      // instead of discarding them on every optimistic restore.
+      ...(existingMatches
+        ? {
+            fullName: existing.fullName,
+            avatarUrl: existing.avatarUrl,
+            phoneNumber: existing.phoneNumber,
+            bio: existing.bio,
+            createdAt: existing.createdAt,
+            lastLoginAt: existing.lastLoginAt,
+          }
+        : {}),
     });
     return true;
+  }
+
+  /**
+   * Establish a session on load, refreshing the access token first if it has
+   * expired but a refresh token is still available. `restoreFromToken()` alone
+   * only covers a still-valid access token, so callers that never fire an
+   * authenticated request (e.g. public pages) would otherwise never learn a
+   * session could be silently renewed.
+   */
+  tryRestoreSession(): Observable<boolean> {
+    if (this.isAuthenticated()) {
+      return of(true);
+    }
+    if (this.tokenService.isAccessTokenValid() && this.restoreFromToken()) {
+      return of(true);
+    }
+    if (!this.tokenService.getRefreshToken()) {
+      return of(false);
+    }
+    return this.refreshToken().pipe(
+      map(() => this.restoreFromToken()),
+      catchError(() => {
+        this.clearSession();
+        return of(false);
+      }),
+    );
   }
 
   hasRole(role: string): boolean {

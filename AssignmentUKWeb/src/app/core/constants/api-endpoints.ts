@@ -54,4 +54,14 @@ export const API_ENDPOINTS = {
   files: {
     upload: `${base}/files/upload`,
   },
+  priceEstimates: {
+    root: `${base}/price-estimates`,
+  },
+  chat: {
+    sessions: `${base}/chat/sessions`,
+    messages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/messages`,
+    agentMessages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/agent-messages`,
+    close: (sessionId: string) => `${base}/chat/sessions/${sessionId}/close`,
+    hub: `${apiOrigin}/hubs/chat`,
+  },
 } as const;
