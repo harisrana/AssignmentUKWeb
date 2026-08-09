@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
     sessions: `${base}/chat/sessions`,
     messages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/messages`,
     agentMessages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/agent-messages`,
+    visitorName: (sessionId: string) => `${base}/chat/sessions/${sessionId}/visitor-name`,
     close: (sessionId: string) => `${base}/chat/sessions/${sessionId}/close`,
     hub: `${apiOrigin}/hubs/chat`,
   },

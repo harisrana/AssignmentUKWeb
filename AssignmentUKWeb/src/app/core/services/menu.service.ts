@@ -24,7 +24,7 @@ export class MenuService {
         { label: 'Permissions', icon: 'key', route: '/app/permissions', permissions: [PERMISSIONS.permissionsView] },
       ],
     },
-    { label: 'Settings', icon: 'settings', route: '/app/settings', permissions: [PERMISSIONS.settingsManage] },
+    { label: 'Settings', icon: 'settings', route: '/app/settings' },
     { label: 'My Profile', icon: 'account_circle', route: '/app/profile' },
   ];
 

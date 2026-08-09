@@ -1,14 +1,17 @@
-export interface DashboardStats {
-  totalOrders: number;
-  activeWriters: number;
-  revenue: number;
-  satisfaction: number;
-}
-
-export interface RecentOrder {
+export interface RecentEnquiry {
   id: string;
+  reference: string;
   subject: string;
   student: string;
-  status: 'In Progress' | 'Delivered' | 'Review' | 'Pending';
-  dueDate: string;
+  status: 'Pending' | 'InProgress' | 'Review' | 'Delivered';
+  submittedDate: string;
+}
+
+export interface DashboardStats {
+  totalEnquiries: number;
+  activeUsers: number;
+  estimatedRevenueLast30Days: number;
+  currency: string;
+  newEnquiriesLast7Days: number;
+  recentEnquiries: RecentEnquiry[];
 }

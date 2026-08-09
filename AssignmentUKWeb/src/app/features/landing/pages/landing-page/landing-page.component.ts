@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { LiveChatWidgetService } from '../../../../core/services/live-chat-widget.service';
 import { ExpertWriter, Faq, Guarantee, ProcessStep } from '../../models/landing.model';
 
 /**
@@ -9,12 +9,13 @@ import { ExpertWriter, Faq, Guarantee, ProcessStep } from '../../models/landing.
  */
 @Component({
   selector: 'app-landing-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly notify = inject(NotificationService);
+  private readonly liveChat = inject(LiveChatWidgetService);
 
   protected readonly quoteForm = this.fb.nonNullable.group({
     subject: ['Nursing', Validators.required],
@@ -93,6 +94,10 @@ export class LandingPageComponent {
 
   protected readonly subjects = ['Nursing', 'CIPD', 'Law', 'Business'];
   protected readonly levels = ['Undergraduate', "Master's", 'PhD'];
+
+  openChat(): void {
+    this.liveChat.openWidget();
+  }
 
   toggleFaq(index: number): void {
     this.faqs.update((list) =>

@@ -30,7 +30,7 @@
       </a>
 
       <!-- Desktop links -->
-      <div class="hidden md:flex items-center gap-8">
+      <div class="hidden lg:flex items-center gap-8">
         <a
           routerLink="/"
           routerLinkActive="text-primary font-bold border-b-2 border-primary"
@@ -91,7 +91,7 @@
       <!-- Right actions -->
       <div class="flex items-center gap-4 md:gap-6">
         @if (auth.isAuthenticated()) {
-          <button type="button" [matMenuTriggerFor]="userMenu" class="hidden sm:flex items-center gap-2 p-1.5 pl-2 rounded-lg hover:bg-surface-container">
+          <button type="button" [matMenuTriggerFor]="userMenu" class="hidden lg:flex items-center gap-2 p-1.5 pl-2 rounded-lg hover:bg-surface-container">
             <div class="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center text-sm font-bold overflow-hidden">
               @if (avatarUrl(); as url) {
                 <img [src]="url" [alt]="auth.user()?.firstName ?? 'User'" class="w-full h-full object-cover" />
@@ -117,10 +117,10 @@
             </button>
           </mat-menu>
         } @else {
-          <a routerLink="/auth/login" class="hidden sm:block text-brand-navy text-sm font-semibold hover:text-brand-orange transition-colors">Login</a>
+          <a routerLink="/auth/login" class="hidden lg:block text-brand-navy text-sm font-semibold hover:text-brand-orange transition-colors">Login</a>
         }
         <a routerLink="/order" class="bg-brand-orange text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl text-[15px] font-semibold hover:shadow-lg hover:scale-105 transition-all">Order Now</a>
-        <button type="button" (click)="toggleMobile()" class="md:hidden p-1 text-brand-navy" aria-label="Menu">
+        <button type="button" (click)="toggleMobile()" class="lg:hidden p-1 text-brand-navy" aria-label="Menu">
           <span class="material-symbols-outlined">{{ mobileOpen() ? 'close' : 'menu' }}</span>
         </button>
       </div>
@@ -128,7 +128,7 @@
 
     <!-- Mobile menu -->
     @if (mobileOpen()) {
-      <div class="md:hidden border-t border-outline-variant/20 bg-surface px-margin-mobile py-4 space-y-2">
+      <div class="lg:hidden border-t border-outline-variant/20 bg-surface px-margin-mobile py-4 space-y-2">
         <a routerLink="/" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Home</a>
         <a routerLink="/about" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">About Us</a>
         <a routerLink="/services" (click)="closeMenus()" class="block py-2 font-semibold text-brand-navy">Services</a>

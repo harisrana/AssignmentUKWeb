@@ -43,8 +43,7 @@ export const FEATURE_ROUTES: Routes = [
   },
   {
     path: 'settings',
-    data: { breadcrumb: 'Settings', permissions: [PERMISSIONS.settingsManage] },
-    canActivate: [permissionGuard],
+    data: { breadcrumb: 'Settings' },
     loadChildren: () => import('./settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
   },
   {

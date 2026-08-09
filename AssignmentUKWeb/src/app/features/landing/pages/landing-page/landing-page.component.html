@@ -11,10 +11,11 @@
           services. From CIPD to Law, we handle it all with expert precision.
         </p>
         <div class="flex flex-wrap gap-4 mb-12">
-          <a routerLink="/order" class="bg-brand-orange text-white px-8 py-4 rounded-xl text-base font-semibold shadow-lg hover:brightness-95 transition-all">Order Now</a>
-          <a href="tel:+442033320848" class="border-2 border-brand-navy text-brand-navy px-8 py-4 rounded-xl text-base font-semibold hover:bg-brand-navy hover:text-white transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined">call</span> Call Us
-          </a>
+          <button
+            type="button"
+            (click)="openChat()"
+            class="bg-brand-orange text-white px-8 py-4 rounded-xl text-base font-semibold shadow-lg hover:brightness-95 transition-all"
+          >Contact Us</button>
         </div>
         <div class="flex flex-wrap gap-6">
           @for (stat of stats; track stat.label) {
@@ -73,7 +74,7 @@
     </form>
   </div>
 
-  <!-- Expert writers -->
+  <!-- Expert writers (hidden: placeholder/mock writer profiles, not real data)
   <section id="writers" class="py-stack-lg bg-background">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="text-center mb-16">
@@ -121,6 +122,7 @@
       </div>
     </div>
   </section>
+  -->
 
   <!-- How it works -->
   <section id="process" class="py-stack-lg bg-surface-container-lowest">

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PriceEstimateService } from '../../../../core/services/price-estimate.service';
@@ -6,14 +7,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
 interface PricingTier {
   name: string;
-  perPage: number;
+  pricePer500Words: number;
   featured: boolean;
   features: string[];
 }
 
 @Component({
   selector: 'app-order',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, DecimalPipe],
   templateUrl: './order.component.html',
 })
 export class OrderComponent {
@@ -24,19 +25,19 @@ export class OrderComponent {
   protected readonly tiers: PricingTier[] = [
     {
       name: 'Standard',
-      perPage: 12,
+      pricePer500Words: 12,
       featured: false,
       features: ['2:2 standard writer', '7-day delivery', 'Free Turnitin report', 'Unlimited revisions'],
     },
     {
       name: 'Premium',
-      perPage: 18,
+      pricePer500Words: 18,
       featured: true,
       features: ['2:1 expert writer', '3-day delivery', 'Free Turnitin report', 'Priority support', 'Plagiarism guarantee'],
     },
     {
       name: 'Platinum',
-      perPage: 26,
+      pricePer500Words: 26,
       featured: false,
       features: ['First-class PhD writer', '24-hour delivery', 'Free Turnitin report', 'Dedicated manager', 'Top-grade guarantee'],
     },
@@ -71,14 +72,17 @@ export class OrderComponent {
 
   private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
 
-  protected readonly selectedPerPage = computed(() => Number(this.value().tier));
+  protected readonly selectedPricePer500Words = computed(() => Number(this.value().tier));
+
+  /** Pricing is per 500-word block — `pages` holds the block count. */
+  protected readonly wordCount = computed(() => (Number(this.value().pages) || 0) * 500);
 
   protected readonly estimate = computed(() => {
     const v = this.value();
     const pages = Number(v.pages) || 0;
     const level = Number(v.level) || 1;
-    const perPage = Number(v.tier) || 0;
-    return Math.round(pages * perPage * level);
+    const pricePer500Words = Number(v.tier) || 0;
+    return Math.round(pages * pricePer500Words * level);
   });
 
   blockNonDigit(event: KeyboardEvent): void {
@@ -96,7 +100,7 @@ export class OrderComponent {
   }
 
   choosePackage(tier: PricingTier): void {
-    this.form.controls.tier.setValue(tier.perPage);
+    this.form.controls.tier.setValue(tier.pricePer500Words);
     document.getElementById('estimate-calculator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -108,8 +112,8 @@ export class OrderComponent {
 
     const v = this.value();
     const pages = Number(v.pages) || 0;
-    const pricePerPage = Number(v.tier) || 0;
-    const tier = this.tiers.find((t) => t.perPage === pricePerPage);
+    const pricePer500Words = Number(v.tier) || 0;
+    const tier = this.tiers.find((t) => t.pricePer500Words === pricePer500Words);
     const level = this.levels.find((l) => l.multiplier === Number(v.level));
     const order = this.orderForm.getRawValue();
 
@@ -124,7 +128,7 @@ export class OrderComponent {
         pages,
         academicLevel: level?.label ?? 'Undergraduate',
         packageName: tier?.name ?? 'Standard',
-        pricePerPage,
+        pricePerPage: pricePer500Words,
         estimatedTotal: this.estimate(),
         currency: 'GBP',
       })

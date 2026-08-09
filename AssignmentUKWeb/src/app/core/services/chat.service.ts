@@ -50,6 +50,10 @@ export class ChatService extends BaseApiService {
     return this.post<ChatSession>(API_ENDPOINTS.chat.sessions, { visitorName });
   }
 
+  updateVisitorName(sessionId: string, visitorName: string): Observable<void> {
+    return this.patch<void>(API_ENDPOINTS.chat.visitorName(sessionId), { visitorName });
+  }
+
   getMessages(sessionId: string): Observable<ChatMessage[]> {
     return this.get<ChatMessage[]>(API_ENDPOINTS.chat.messages(sessionId));
   }

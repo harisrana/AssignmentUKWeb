@@ -11,25 +11,25 @@
         [class.md:scale-105]="tier.featured"
         [class.bg-white]="!tier.featured"
         [class.shadow-custom]="!tier.featured"
-        [class.border-outline-variant]="!tier.featured && tier.perPage !== selectedPerPage()"
-        [class.border-brand-orange]="tier.perPage === selectedPerPage()"
-        [class.ring-4]="tier.perPage === selectedPerPage()"
-        [class.ring-brand-orange/20]="tier.perPage === selectedPerPage()"
+        [class.border-outline-variant]="!tier.featured && tier.pricePer500Words !== selectedPricePer500Words()"
+        [class.border-brand-orange]="tier.pricePer500Words === selectedPricePer500Words()"
+        [class.ring-4]="tier.pricePer500Words === selectedPricePer500Words()"
+        [class.ring-brand-orange/20]="tier.pricePer500Words === selectedPricePer500Words()"
       >
-        @if (tier.perPage === selectedPerPage()) {
+        @if (tier.pricePer500Words === selectedPricePer500Words()) {
           <span class="absolute -top-3 right-6 px-2.5 py-1 rounded-full bg-brand-orange text-white text-[10px] font-bold uppercase tracking-wide flex items-center gap-1 shadow-custom">
             <span class="material-symbols-outlined text-[12px]">check_circle</span> Selected
           </span>
         }
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-bold text-lg" [class.text-brand-navy]="!tier.featured">{{ tier.name }}</h3>
-          @if (tier.featured && tier.perPage !== selectedPerPage()) {
+          @if (tier.featured && tier.pricePer500Words !== selectedPricePer500Words()) {
             <span class="px-2.5 py-1 rounded-full bg-brand-orange text-white text-[10px] font-bold uppercase tracking-wide">Most Popular</span>
           }
         </div>
         <p class="mb-4">
-          <span class="font-display-lg text-3xl font-extrabold" [class.text-brand-navy]="!tier.featured">£{{ tier.perPage }}</span>
-          <span class="text-xs opacity-70">/ page</span>
+          <span class="font-display-lg text-3xl font-extrabold" [class.text-brand-navy]="!tier.featured">£{{ tier.pricePer500Words }}</span>
+          <span class="text-xs opacity-70">/ 500 words</span>
         </p>
         <ul class="space-y-2 mb-6 flex-1">
           @for (feature of tier.features; track feature) {
@@ -43,14 +43,14 @@
           type="button"
           (click)="choosePackage(tier)"
           class="text-center py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5"
-          [class.bg-brand-orange]="tier.featured || tier.perPage === selectedPerPage()"
-          [class.text-white]="tier.featured || tier.perPage === selectedPerPage()"
-          [class.border-2]="!tier.featured && tier.perPage !== selectedPerPage()"
-          [class.border-brand-navy]="!tier.featured && tier.perPage !== selectedPerPage()"
-          [class.text-brand-navy]="!tier.featured && tier.perPage !== selectedPerPage()"
-          [class.hover:bg-brand-navy]="!tier.featured && tier.perPage !== selectedPerPage()"
+          [class.bg-brand-orange]="tier.featured || tier.pricePer500Words === selectedPricePer500Words()"
+          [class.text-white]="tier.featured || tier.pricePer500Words === selectedPricePer500Words()"
+          [class.border-2]="!tier.featured && tier.pricePer500Words !== selectedPricePer500Words()"
+          [class.border-brand-navy]="!tier.featured && tier.pricePer500Words !== selectedPricePer500Words()"
+          [class.text-brand-navy]="!tier.featured && tier.pricePer500Words !== selectedPricePer500Words()"
+          [class.hover:bg-brand-navy]="!tier.featured && tier.pricePer500Words !== selectedPricePer500Words()"
         >
-          @if (tier.perPage === selectedPerPage()) {
+          @if (tier.pricePer500Words === selectedPricePer500Words()) {
             <span class="material-symbols-outlined text-[18px]">check_circle</span> Selected
           } @else {
             Choose {{ tier.name }}
@@ -73,8 +73,8 @@
 
       <form [formGroup]="form" class="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b border-outline-variant/10">
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-secondary">Pages ({{ form.controls.pages.value }})</label>
-          <input type="range" min="1" max="2000" formControlName="pages" class="w-full accent-brand-orange" />
+          <label class="text-xs font-semibold text-secondary">Word Count ({{ wordCount() | number }} words)</label>
+          <input type="range" min="1" max="100" formControlName="pages" class="w-full accent-brand-orange" />
         </div>
         <div class="space-y-1.5">
           <label class="text-xs font-semibold text-secondary">Academic Level</label>
@@ -88,7 +88,7 @@
           <label class="text-xs font-semibold text-secondary">Package</label>
           <select formControlName="tier" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2.5 text-sm text-brand-navy">
             @for (tier of tiers; track tier.name) {
-              <option [value]="tier.perPage">{{ tier.name }} (£{{ tier.perPage }}/pg)</option>
+              <option [value]="tier.pricePer500Words">{{ tier.name }} (£{{ tier.pricePer500Words }}/500 words)</option>
             }
           </select>
         </div>
@@ -181,12 +181,12 @@
         </div>
         <dl class="space-y-2 text-sm border-t border-white/10 pt-4">
           <div class="flex justify-between">
-            <dt class="text-white/60">Pages</dt>
-            <dd class="font-semibold">{{ form.controls.pages.value }}</dd>
+            <dt class="text-white/60">Word Count</dt>
+            <dd class="font-semibold">{{ wordCount() | number }}</dd>
           </div>
           <div class="flex justify-between">
             <dt class="text-white/60">Package</dt>
-            <dd class="font-semibold">£{{ form.controls.tier.value }} / page</dd>
+            <dd class="font-semibold">£{{ form.controls.tier.value }} / 500 words</dd>
           </div>
         </dl>
         <button

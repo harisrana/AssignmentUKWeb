@@ -2,7 +2,8 @@
   <!-- Sidebar -->
   <mat-sidenav
     [opened]="sidenavOpen()"
-    [mode]="'side'"
+    (openedChange)="sidenavOpen.set($event)"
+    [mode]="sidenavMode()"
     class="w-64 !bg-brand-navy text-white border-none"
     [fixedInViewport]="false"
   >
@@ -32,6 +33,7 @@
                 <a
                   [routerLink]="child.route"
                   routerLinkActive="bg-brand-orange text-white"
+                  (click)="closeSidenavOnHandset()"
                   class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
                 >
                   <span class="material-symbols-outlined text-base">{{ child.icon }}</span>
@@ -45,6 +47,7 @@
             [routerLink]="item.route"
             routerLinkActive="bg-brand-orange text-white"
             [routerLinkActiveOptions]="{ exact: false }"
+            (click)="closeSidenavOnHandset()"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors"
           >
             <span class="material-symbols-outlined">{{ item.icon }}</span>
@@ -94,11 +97,32 @@
         <!-- Notification center -->
         <button type="button" [matMenuTriggerFor]="notifMenu" class="p-2 rounded-lg hover:bg-surface-container relative" aria-label="Notifications">
           <span class="material-symbols-outlined text-brand-navy">notifications</span>
-          <span class="absolute top-1 right-1 w-2 h-2 bg-brand-orange rounded-full"></span>
+          @if (chatUnread.totalUnread(); as unread) {
+            <span class="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center">
+              {{ unread > 9 ? '9+' : unread }}
+            </span>
+          }
         </button>
         <mat-menu #notifMenu="matMenu" class="w-80">
           <div class="px-4 py-3 font-bold text-brand-navy border-b border-outline-variant/20">Notifications</div>
-          <div class="px-4 py-6 text-center text-sm text-secondary">You're all caught up 🎉</div>
+          @if (chatUnread.unreadSessions().length === 0) {
+            <div class="px-4 py-6 text-center text-sm text-secondary">You're all caught up 🎉</div>
+          } @else {
+            @for (session of chatUnread.unreadSessions(); track session.id) {
+              <button mat-menu-item (click)="openChatSession(session)" class="flex items-center justify-between gap-2 h-auto py-2">
+                <span class="min-w-0">
+                  <span class="block font-semibold text-brand-navy truncate">{{ session.visitorName || 'Anonymous visitor' }}</span>
+                  @if (chatUnread.messagePreviews()[session.id]; as preview) {
+                    <span class="block text-xs text-secondary truncate">{{ preview }}</span>
+                  }
+                  <span class="block text-[11px] text-secondary/70">{{ session.lastMessageAt | date: 'short' }}</span>
+                </span>
+                <span class="shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-brand-orange text-white text-[11px] font-bold flex items-center justify-center">
+                  {{ chatUnread.unreadCounts()[session.id] > 9 ? '9+' : chatUnread.unreadCounts()[session.id] }}
+                </span>
+              </button>
+            }
+          }
         </mat-menu>
 
         <!-- User menu -->
