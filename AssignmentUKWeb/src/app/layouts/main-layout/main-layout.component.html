@@ -78,6 +78,17 @@
       </div>
 
       <div class="flex items-center gap-1 md:gap-2">
+        <!-- Back to public website -->
+        <a
+          routerLink="/"
+          class="p-2 rounded-lg hover:bg-surface-container flex items-center gap-1.5"
+          title="View website"
+          aria-label="View website"
+        >
+          <span class="material-symbols-outlined text-brand-navy">public</span>
+          <span class="hidden md:inline text-xs font-bold text-secondary">View Website</span>
+        </a>
+
         <!-- Language switcher -->
         <button type="button" [matMenuTriggerFor]="langMenu" class="p-2 rounded-lg hover:bg-surface-container flex items-center gap-1" aria-label="Language">
           <span class="material-symbols-outlined text-brand-navy">translate</span>
@@ -140,6 +151,9 @@
           <span class="material-symbols-outlined text-base text-secondary hidden md:inline">expand_more</span>
         </button>
         <mat-menu #userMenu="matMenu">
+          <a mat-menu-item routerLink="/">
+            <span class="material-symbols-outlined mr-2 align-middle">public</span> View Website
+          </a>
           <a mat-menu-item routerLink="/app/profile">
             <span class="material-symbols-outlined mr-2 align-middle">account_circle</span> My Profile
           </a>

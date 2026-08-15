@@ -49,6 +49,8 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     if (files.length) {
       this.selectedAvatarFile.set(files[0]);
       this.notify.info(`Selected ${files[0].name} — it will upload when you save.`);
+    } else {
+      this.selectedAvatarFile.set(null);
     }
   }
 

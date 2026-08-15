@@ -1,9 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ViewChild, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 import { PriceEstimateService } from '../../../../core/services/price-estimate.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
+import { FileUploadResult } from '../../../../core/models/file.model';
+import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 
 interface PricingTier {
   name: string;
@@ -14,12 +18,13 @@ interface PricingTier {
 
 @Component({
   selector: 'app-order',
-  imports: [ReactiveFormsModule, DecimalPipe],
+  imports: [ReactiveFormsModule, DecimalPipe, FileUploadComponent],
   templateUrl: './order.component.html',
 })
 export class OrderComponent {
   private readonly fb = inject(FormBuilder);
   private readonly priceEstimateService = inject(PriceEstimateService);
+  private readonly fileService = inject(FileService);
   private readonly notify = inject(NotificationService);
 
   protected readonly tiers: PricingTier[] = [
@@ -69,6 +74,9 @@ export class OrderComponent {
   });
 
   protected readonly submitting = signal(false);
+  protected readonly attachedFile = signal<File | null>(null);
+
+  @ViewChild(FileUploadComponent) private fileUpload?: FileUploadComponent;
 
   private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
 
@@ -99,6 +107,10 @@ export class OrderComponent {
     }
   }
 
+  onFileSelected(files: File[]): void {
+    this.attachedFile.set(files[0] ?? null);
+  }
+
   choosePackage(tier: PricingTier): void {
     this.form.controls.tier.setValue(tier.pricePer500Words);
     document.getElementById('estimate-calculator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -117,26 +129,36 @@ export class OrderComponent {
     const level = this.levels.find((l) => l.multiplier === Number(v.level));
     const order = this.orderForm.getRawValue();
 
+    const file = this.attachedFile();
+
     this.submitting.set(true);
-    this.priceEstimateService
-      .submit({
-        details: order.details,
-        fullName: order.fullName,
-        email: order.email,
-        mobileNo: order.mobileNo,
-        country: order.country,
-        pages,
-        academicLevel: level?.label ?? 'Undergraduate',
-        packageName: tier?.name ?? 'Standard',
-        pricePerPage: pricePer500Words,
-        estimatedTotal: this.estimate(),
-        currency: 'GBP',
-      })
+    (file ? this.fileService.upload(file) : of<FileUploadResult | null>(null))
+      .pipe(
+        switchMap((uploaded) =>
+          this.priceEstimateService.submit({
+            details: order.details,
+            fullName: order.fullName,
+            email: order.email,
+            mobileNo: order.mobileNo,
+            country: order.country,
+            pages,
+            academicLevel: level?.label ?? 'Undergraduate',
+            packageName: tier?.name ?? 'Standard',
+            pricePerPage: pricePer500Words,
+            estimatedTotal: this.estimate(),
+            currency: 'GBP',
+            attachmentUrl: uploaded?.url ?? null,
+            attachmentFileName: uploaded?.fileName ?? null,
+          }),
+        ),
+      )
       .subscribe({
         next: () => {
           this.submitting.set(false);
           this.notify.success('Your order request has been submitted. We will contact you shortly.');
           this.orderForm.reset();
+          this.attachedFile.set(null);
+          this.fileUpload?.reset();
         },
         error: () => {
           this.submitting.set(false);

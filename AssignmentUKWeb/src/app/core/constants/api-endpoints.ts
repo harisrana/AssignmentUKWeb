@@ -50,12 +50,25 @@ export const API_ENDPOINTS = {
   },
   dashboard: {
     stats: `${base}/dashboard/stats`,
+    enquiries: `${base}/dashboard/enquiries`,
   },
   files: {
     upload: `${base}/files/upload`,
   },
   priceEstimates: {
     root: `${base}/price-estimates`,
+    status: (id: string) => `${base}/price-estimates/${id}/status`,
+    statusHistory: (id: string) => `${base}/price-estimates/${id}/status-history`,
+  },
+  enquiryStatuses: {
+    root: `${base}/enquiry-statuses`,
+    byId: (id: string) => `${base}/enquiry-statuses/${id}`,
+    moveUp: (id: string) => `${base}/enquiry-statuses/${id}/move-up`,
+    moveDown: (id: string) => `${base}/enquiry-statuses/${id}/move-down`,
+  },
+  pricingRules: {
+    root: `${base}/pricing-rules`,
+    byId: (id: string) => `${base}/pricing-rules/${id}`,
   },
   chat: {
     sessions: `${base}/chat/sessions`,

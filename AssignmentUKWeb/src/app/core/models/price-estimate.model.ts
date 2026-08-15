@@ -10,6 +10,8 @@ export interface CreatePriceEstimateRequest {
   pricePerPage: number;
   estimatedTotal: number;
   currency: string;
+  attachmentUrl?: string | null;
+  attachmentFileName?: string | null;
 }
 
 export interface PriceEstimateRequest extends CreatePriceEstimateRequest {

@@ -24,6 +24,14 @@ export class MenuService {
         { label: 'Permissions', icon: 'key', route: '/app/permissions', permissions: [PERMISSIONS.permissionsView] },
       ],
     },
+    {
+      label: 'Configuration',
+      icon: 'tune',
+      roles: [ROLES.admin, ROLES.manager],
+      children: [
+        { label: 'Add Rule', icon: 'rule', route: '/app/configuration/pricing-rules' },
+      ],
+    },
     { label: 'Settings', icon: 'settings', route: '/app/settings' },
     { label: 'My Profile', icon: 'account_circle', route: '/app/profile' },
   ];

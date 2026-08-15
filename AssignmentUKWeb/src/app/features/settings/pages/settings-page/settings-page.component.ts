@@ -4,11 +4,13 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { TranslateService } from '@ngx-translate/core';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ThemeService } from '../../../../core/services/theme.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { EnquiryStatusSettingsComponent } from '../../components/enquiry-status-settings/enquiry-status-settings.component';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [PageHeaderComponent, MatSlideToggleModule, UpperCasePipe],
+  imports: [PageHeaderComponent, MatSlideToggleModule, UpperCasePipe, EnquiryStatusSettingsComponent],
   template: `
     <app-page-header title="Settings" subtitle="Manage your workspace preferences." />
 
@@ -60,12 +62,17 @@ import { environment } from '../../../../../environments/environment';
           </div>
         </div>
       </section>
+
+      @if (auth.hasRole('Admin')) {
+        <app-enquiry-status-settings />
+      }
     </div>
   `,
 })
 export class SettingsPageComponent {
   private readonly translate = inject(TranslateService);
   protected readonly theme = inject(ThemeService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly languages = environment.supportedLanguages;
   protected current = this.translate.currentLang ?? environment.defaultLanguage;
