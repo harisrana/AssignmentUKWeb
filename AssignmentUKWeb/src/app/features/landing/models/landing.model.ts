@@ -7,14 +7,19 @@ export interface ExpertWriter {
   successRate: string;
 }
 
-export interface ProcessStep {
+export interface Guarantee {
   icon: string;
   title: string;
   description: string;
-  accent: boolean;
 }
 
-export interface Guarantee {
+export interface Stat {
+  icon: string;
+  value: string;
+  label: string;
+}
+
+export interface WhyUsItem {
   icon: string;
   title: string;
   description: string;

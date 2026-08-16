@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { LiveChatWidgetService } from '../../../../core/services/live-chat-widget.service';
-import { ExpertWriter, Faq, Guarantee, ProcessStep } from '../../models/landing.model';
+import { ExpertWriter, Faq, Guarantee, Stat, WhyUsItem } from '../../models/landing.model';
 
 /**
  * Public marketing landing page — reproduces the Stitch "home_desktop" design.
@@ -19,16 +19,16 @@ export class LandingPageComponent {
   private readonly liveChat = inject(LiveChatWidgetService);
 
   protected readonly quoteForm = this.fb.nonNullable.group({
-    subject: ['Nursing', Validators.required],
-    level: ['Undergraduate', Validators.required],
+    subject: ['', Validators.required],
+    level: ['', Validators.required],
     deadline: ['', Validators.required],
     wordCount: [2500, [Validators.required, Validators.min(100)]],
   });
 
-  protected readonly stats = [
-    { value: '10+', label: 'Years Experience' },
-    { value: '2M+', label: 'Orders Delivered' },
-    { value: '999+', label: 'Expert Writers' },
+  protected readonly stats: Stat[] = [
+    { icon: 'military_tech', value: '10+', label: 'Years Experience' },
+    { icon: 'assignment_turned_in', value: '2M+', label: 'Orders Delivered' },
+    { icon: 'groups', value: '50K+', label: 'Happy Students' },
   ];
 
   protected readonly writers: ExpertWriter[] = [
@@ -58,31 +58,31 @@ export class LandingPageComponent {
     },
   ];
 
-  protected readonly steps: ProcessStep[] = [
-    { icon: 'description', title: 'Share Brief', description: 'Upload your instructions and requirements.', accent: true },
-    { icon: 'track_changes', title: 'Track Progress', description: 'Monitor your assignment in real-time.', accent: false },
-    { icon: 'task_alt', title: 'Receive Draft', description: 'Download your custom-written paper.', accent: false },
-    { icon: 'send', title: 'Submit & Win', description: 'Hand in your work with total confidence.', accent: true },
+  protected readonly whyUs: WhyUsItem[] = [
+    { icon: 'school', title: 'Expert Writers', description: 'Qualified writers with advanced degrees.' },
+    { icon: 'verified', title: 'Plagiarism Free', description: '100% original content with plagiarism report.' },
+    { icon: 'schedule', title: 'On-Time Delivery', description: 'We value your time and always deliver on time.' },
+    { icon: 'support_agent', title: '24/7 Support', description: 'Our support team is always here to help.' },
   ];
 
   protected readonly guarantees: Guarantee[] = [
-    { icon: 'history', title: 'Unlimited Revisions', description: "We aren't happy until you are. Free changes included." },
-    { icon: 'spellcheck', title: 'Turnitin Report', description: '100% original work with official evidence.' },
-    { icon: 'thumb_up', title: '100% Satisfaction', description: 'Consistently achieving top grades for students.' },
-    { icon: 'savings', title: 'Cheapest Rates', description: 'Premium quality at student-friendly prices.' },
+    { icon: 'menu_book', title: 'Wide Range of Subjects', description: 'We cover all subjects and academic levels.' },
+    { icon: 'shield', title: 'Secure & Confidential', description: 'Your data and privacy are always protected.' },
+    { icon: 'thumb_up', title: '100% Satisfaction', description: 'We ensure quality work and student satisfaction.' },
+    { icon: 'currency_pound', title: 'Money Back Guarantee', description: '100% money back if you are not satisfied.' },
   ];
 
   protected readonly faqs = signal<Faq[]>([
     {
-      question: 'Is this service confidential?',
+      question: 'Is this content 100% original?',
       answer:
-        'Yes, your privacy is our top priority. We use end-to-end encryption and never share your details with any third parties or your university.',
+        'Yes, every assignment is written from scratch and checked with Turnitin to guarantee it is 100% plagiarism-free before delivery.',
       open: false,
     },
     {
-      question: 'Who will write my assignment?',
+      question: 'What are the payment options?',
       answer:
-        "Your assignment will be handled by a UK-based writer with at least a Master's or PhD degree in your specific subject area.",
+        'We accept all major credit/debit cards along with PayPal and Stripe, so you can pay securely in whichever way suits you.',
       open: false,
     },
     {
