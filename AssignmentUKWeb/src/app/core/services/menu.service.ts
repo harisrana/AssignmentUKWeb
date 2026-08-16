@@ -30,6 +30,15 @@ export class MenuService {
       roles: [ROLES.admin, ROLES.manager],
       children: [
         { label: 'Add Rule', icon: 'rule', route: '/app/configuration/pricing-rules' },
+        { label: 'Announcements', icon: 'campaign', route: '/app/configuration/announcements' },
+      ],
+    },
+    {
+      label: 'Reports',
+      icon: 'summarize',
+      roles: [ROLES.admin, ROLES.manager],
+      children: [
+        { label: 'All Orders', icon: 'receipt_long', route: '/app/reports/orders' },
       ],
     },
     { label: 'Settings', icon: 'settings', route: '/app/settings' },

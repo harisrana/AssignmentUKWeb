@@ -1,47 +1,62 @@
-<app-page-header
-  [title]="'Welcome back, ' + (auth.user()?.firstName ?? 'there') + ' 👋'"
-  [subtitle]="isAdmin() ? 'Here\'s what\'s happening across your assignments today.' : 'Here\'s what\'s on your plate today.'"
-/>
+<app-page-header title="All Orders" />
 
-<!-- KPI cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-  <app-stat-card
-    icon="assignment"
-    [value]="(store.stats()?.totalEnquiries ?? 0) | number"
-    [label]="isAdmin() ? 'Total Enquiries' : 'My Enquiries'"
-    iconBgClass="bg-brand-orange"
-  />
-  @if (isAdmin()) {
-    <app-stat-card
-      icon="groups"
-      [value]="(store.stats()?.activeUsers ?? 0) | number"
-      label="Active Users"
-      iconBgClass="bg-brand-navy"
+<form
+  [formGroup]="filterForm"
+  (ngSubmit)="applyFilters()"
+  class="bg-surface-container-lowest rounded-2xl shadow-custom border border-outline-variant/10 p-4 mb-6 flex flex-wrap items-end gap-4"
+>
+  <div class="space-y-1.5">
+    <label class="text-xs font-semibold text-secondary">Status</label>
+    <select
+      formControlName="status"
+      class="bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-brand-navy outline-none focus:ring-2 focus:ring-brand-orange/50 min-w-[160px]"
+    >
+      <option value="">All statuses</option>
+      @for (s of statuses(); track s) {
+        <option [value]="s">{{ statusLabel(s) }}</option>
+      }
+    </select>
+  </div>
+  <div class="space-y-1.5">
+    <label class="text-xs font-semibold text-secondary">From date</label>
+    <input
+      type="date"
+      formControlName="fromDate"
+      class="bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-brand-navy outline-none focus:ring-2 focus:ring-brand-orange/50"
     />
-    <app-stat-card
-      icon="payments"
-      [value]="((store.stats()?.estimatedRevenueLast30Days ?? 0) | currency: (store.stats()?.currency ?? 'GBP') : 'symbol' : '1.0-0') ?? '£0'"
-      label="Est. Revenue (30d)"
-      iconBgClass="bg-green-600"
+  </div>
+  <div class="space-y-1.5">
+    <label class="text-xs font-semibold text-secondary">To date</label>
+    <input
+      type="date"
+      formControlName="toDate"
+      class="bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-brand-navy outline-none focus:ring-2 focus:ring-brand-orange/50"
     />
-  }
-  <app-stat-card
-    icon="mark_email_unread"
-    [value]="(store.stats()?.newEnquiriesLast7Days ?? 0) | number"
-    [label]="isAdmin() ? 'New Enquiries (7d)' : 'New (7d)'"
-    iconBgClass="bg-purple-600"
-  />
-</div>
+  </div>
+  <div class="flex items-center gap-2">
+    <button
+      type="submit"
+      class="px-5 py-2 rounded-lg bg-brand-orange text-white text-sm font-bold hover:brightness-95"
+    >
+      Filter
+    </button>
+    <button
+      type="button"
+      (click)="clearFilters()"
+      class="px-5 py-2 rounded-lg border border-outline-variant/30 text-secondary text-sm font-semibold hover:bg-surface-container-low"
+    >
+      Clear
+    </button>
+  </div>
+</form>
 
-<!-- Recent enquiries: admins now use Reports → All Orders instead -->
-@if (!isAdmin()) {
 <div class="bg-surface-container-lowest rounded-2xl shadow-custom border border-outline-variant/10 overflow-hidden">
   <div class="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-    <h2 class="font-bold text-brand-navy">My Enquiries</h2>
+    <h2 class="font-bold text-brand-navy">Orders</h2>
   </div>
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto overflow-y-auto max-h-[560px]">
     <table class="w-full text-sm">
-      <thead>
+      <thead class="sticky top-0 bg-surface-container-lowest z-10">
         <tr class="text-left text-secondary border-b border-outline-variant/20">
           <th class="px-6 py-3 font-semibold">Reference</th>
           <th class="px-6 py-3 font-semibold">Subject</th>
@@ -76,13 +91,18 @@
               }
             </td>
             <td class="px-6 py-4">
-              <span
-                class="px-2.5 py-1 rounded-full text-xs font-bold"
+              <select
+                #statusSelect
+                class="px-2.5 py-1 pr-6 rounded-full text-xs font-bold border-0 cursor-pointer appearance-none bg-no-repeat focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22 fill=%22currentColor%22><path fill-rule=%22evenodd%22 d=%22M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z%22 clip-rule=%22evenodd%22/></svg>'); background-position: right 4px center; background-size: 14px;"
                 [style.background-color]="statusColor(enquiry.status)"
                 [style.color]="statusTextColor(enquiry.status)"
+                (change)="onStatusChange(enquiry, $any($event.target).value, statusSelect)"
               >
-                {{ statusLabel(enquiry.status) }}
-              </span>
+                @for (s of statuses(); track s) {
+                  <option [value]="s" [selected]="s === enquiry.status">{{ statusLabel(s) }}</option>
+                }
+              </select>
             </td>
             <td class="px-6 py-4">
               @if (attachmentUrl(enquiry); as url) {
@@ -115,9 +135,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="10" class="px-6 py-8 text-center text-secondary">
-              {{ isAdmin() ? 'No enquiries yet.' : "You don't have any enquiries assigned yet." }}
-            </td>
+            <td colspan="10" class="px-6 py-8 text-center text-secondary">No orders yet.</td>
           </tr>
         }
       </tbody>
@@ -166,4 +184,3 @@
     </div>
   </div>
 </div>
-}

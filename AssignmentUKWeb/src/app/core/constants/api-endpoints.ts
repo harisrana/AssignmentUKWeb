@@ -57,6 +57,7 @@ export const API_ENDPOINTS = {
   },
   priceEstimates: {
     root: `${base}/price-estimates`,
+    quote: `${base}/price-estimates/quote`,
     status: (id: string) => `${base}/price-estimates/${id}/status`,
     statusHistory: (id: string) => `${base}/price-estimates/${id}/status-history`,
   },
@@ -69,6 +70,11 @@ export const API_ENDPOINTS = {
   pricingRules: {
     root: `${base}/pricing-rules`,
     byId: (id: string) => `${base}/pricing-rules/${id}`,
+  },
+  announcements: {
+    root: `${base}/announcements`,
+    active: `${base}/announcements/active`,
+    byId: (id: string) => `${base}/announcements/${id}`,
   },
   chat: {
     sessions: `${base}/chat/sessions`,

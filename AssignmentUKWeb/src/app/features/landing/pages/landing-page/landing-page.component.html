@@ -130,17 +130,31 @@
       <h2 class="font-headline-md text-[22px] md:text-[30px] font-bold text-brand-navy text-center mb-16">How It Works</h2>
       <div class="relative flex flex-col md:flex-row justify-between items-start gap-12">
         @for (step of steps; track step.title) {
-          <div class="flex-1 text-center group relative z-10">
-            <div
-              class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform"
-              [class.orange-gradient]="step.accent"
-              [class.bg-brand-navy]="!step.accent"
-            >
-              <span class="material-symbols-outlined text-white text-4xl">{{ step.icon }}</span>
+          @if (step.title === 'Share Brief') {
+            <a routerLink="/order" class="flex-1 text-center group relative z-10 cursor-pointer">
+              <div
+                class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform"
+                [class.orange-gradient]="step.accent"
+                [class.bg-brand-navy]="!step.accent"
+              >
+                <span class="material-symbols-outlined text-white text-4xl">{{ step.icon }}</span>
+              </div>
+              <h4 class="font-bold text-xl mb-2 text-brand-navy">{{ step.title }}</h4>
+              <p class="text-secondary text-sm">{{ step.description }}</p>
+            </a>
+          } @else {
+            <div class="flex-1 text-center group relative z-10">
+              <div
+                class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform"
+                [class.orange-gradient]="step.accent"
+                [class.bg-brand-navy]="!step.accent"
+              >
+                <span class="material-symbols-outlined text-white text-4xl">{{ step.icon }}</span>
+              </div>
+              <h4 class="font-bold text-xl mb-2 text-brand-navy">{{ step.title }}</h4>
+              <p class="text-secondary text-sm">{{ step.description }}</p>
             </div>
-            <h4 class="font-bold text-xl mb-2 text-brand-navy">{{ step.title }}</h4>
-            <p class="text-secondary text-sm">{{ step.description }}</p>
-          </div>
+          }
         }
         <div class="absolute top-10 left-0 w-full h-0.5 bg-brand-navy/10 hidden md:block -z-0"></div>
       </div>
@@ -205,7 +219,7 @@
           <p class="text-white/80 text-lg">Don't let deadlines stress you out. Hire the UK's best experts today.</p>
         </div>
         <div class="relative z-10 flex flex-col gap-4">
-          <button class="bg-brand-navy text-white px-10 py-5 rounded-xl font-bold text-xl shadow-xl hover:scale-105 transition-all">Start Your Order</button>
+          <a routerLink="/order" class="bg-brand-navy text-white px-10 py-5 rounded-xl font-bold text-xl shadow-xl hover:scale-105 transition-all text-center">Start Your Order</a>
           <p class="text-sm font-semibold text-center md:text-right">No Hidden Costs • 100% Safe</p>
         </div>
         <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>

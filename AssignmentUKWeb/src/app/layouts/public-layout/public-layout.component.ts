@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AuthActions } from '../../features/auth/state/auth.actions';
 import { resolveAssetUrl } from '../../core/constants/api-endpoints';
 import { LiveChatComponent } from '../../shared/components/live-chat/live-chat.component';
+import { AnnouncementBarComponent } from '../../shared/components/announcement-bar/announcement-bar.component';
 
 /**
  * Public marketing "master page": fixed top utility bar, sticky navbar (with a
@@ -16,7 +17,7 @@ import { LiveChatComponent } from '../../shared/components/live-chat/live-chat.c
  */
 @Component({
   selector: 'app-public-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule, LiveChatComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule, LiveChatComponent, AnnouncementBarComponent],
   templateUrl: './public-layout.component.html',
 })
 export class PublicLayoutComponent {

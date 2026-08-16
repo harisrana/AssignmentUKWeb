@@ -1,9 +1,10 @@
 import { Component, ViewChild, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { of, switchMap } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { PriceEstimateService } from '../../../../core/services/price-estimate.service';
+import { PricingRuleQuote } from '../../../../core/models/price-estimate.model';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { FileService } from '../../../../core/services/file.service';
 import { FileUploadResult } from '../../../../core/models/file.model';
@@ -93,6 +94,34 @@ export class OrderComponent {
     return Math.round(pages * pricePer500Words * level);
   });
 
+  private readonly selectedTier = computed(() => this.tiers.find((t) => t.pricePer500Words === this.selectedPricePer500Words()));
+
+  private readonly selectedLevel = computed(() => this.levels.find((l) => l.multiplier === Number(this.value().level)));
+
+  /** Live preview of the discount (if any) a matching PricingRule would apply — the actual discount is
+   * always (re)computed server-side at submission time; this is just so the customer can see it upfront. */
+  protected readonly quote = toSignal(
+    toObservable(computed(() => ({
+      packageName: this.selectedTier()?.name ?? 'Standard',
+      academicLevel: this.selectedLevel()?.label ?? 'Undergraduate',
+      words: this.wordCount(),
+    }))).pipe(
+      debounceTime(300),
+      distinctUntilChanged((a, b) => a.packageName === b.packageName && a.academicLevel === b.academicLevel && a.words === b.words),
+      switchMap((q) =>
+        this.priceEstimateService.getQuote(q.packageName, q.academicLevel, q.words).pipe(
+          catchError(() => of<PricingRuleQuote>({ discountPercentage: null, ruleName: null })),
+        ),
+      ),
+    ),
+    { initialValue: null },
+  );
+
+  protected readonly discountedEstimate = computed(() => {
+    const discount = this.quote()?.discountPercentage;
+    return discount ? Math.round(this.estimate() * (1 - discount / 100)) : null;
+  });
+
   blockNonDigit(event: KeyboardEvent): void {
     if (!/[0-9]/.test(event.key)) {
       event.preventDefault();
@@ -122,11 +151,10 @@ export class OrderComponent {
       return;
     }
 
-    const v = this.value();
-    const pages = Number(v.pages) || 0;
-    const pricePer500Words = Number(v.tier) || 0;
-    const tier = this.tiers.find((t) => t.pricePer500Words === pricePer500Words);
-    const level = this.levels.find((l) => l.multiplier === Number(v.level));
+    const words = this.wordCount();
+    const pricePer500Words = this.selectedPricePer500Words();
+    const tier = this.selectedTier();
+    const level = this.selectedLevel();
     const order = this.orderForm.getRawValue();
 
     const file = this.attachedFile();
@@ -141,7 +169,7 @@ export class OrderComponent {
             email: order.email,
             mobileNo: order.mobileNo,
             country: order.country,
-            pages,
+            words,
             academicLevel: level?.label ?? 'Undergraduate',
             packageName: tier?.name ?? 'Standard',
             pricePerPage: pricePer500Words,

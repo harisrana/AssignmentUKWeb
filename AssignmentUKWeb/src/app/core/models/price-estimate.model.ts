@@ -4,7 +4,7 @@ export interface CreatePriceEstimateRequest {
   email: string;
   mobileNo: string;
   country: string;
-  pages: number;
+  words: number;
   academicLevel: string;
   packageName: string;
   pricePerPage: number;
@@ -16,5 +16,12 @@ export interface CreatePriceEstimateRequest {
 
 export interface PriceEstimateRequest extends CreatePriceEstimateRequest {
   id: string;
+  discountPercentage: number | null;
+  discountRuleName: string | null;
   createdDate: string;
+}
+
+export interface PricingRuleQuote {
+  discountPercentage: number | null;
+  ruleName: string | null;
 }

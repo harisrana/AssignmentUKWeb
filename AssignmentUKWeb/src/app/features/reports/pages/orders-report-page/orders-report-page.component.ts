@@ -1,39 +1,44 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
-import { StatCardComponent } from '../../../../shared/components/stat-card/stat-card.component';
-import { DashboardStore } from '../../state/dashboard.store';
-import { DashboardService } from '../../services/dashboard.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { DashboardStore } from '../../../dashboard/state/dashboard.store';
+import { DashboardService } from '../../../dashboard/services/dashboard.service';
 import { EnquiryStatusStore } from '../../../../core/services/enquiry-status.store';
-import { EnquiryStatus, RecentEnquiry } from '../../models/dashboard.model';
-import { StatusHistoryDialogComponent } from './status-history-dialog.component';
+import { EnquiryStatus, RecentEnquiry } from '../../../dashboard/models/dashboard.model';
+import { StatusHistoryDialogComponent } from '../../../dashboard/pages/dashboard-page/status-history-dialog.component';
 import { resolveAssetUrl } from '../../../../core/constants/api-endpoints';
 import { contrastTextColor } from '../../../../core/utils/color.util';
 
 const DEFAULT_STATUS_COLOR = '#6B7280';
 
-export const ENQUIRY_PAGE_SIZE_OPTIONS = [20, 50, 100] as const;
+export const ORDERS_REPORT_PAGE_SIZE_OPTIONS = [20, 50, 100] as const;
 
+/** Reports → All Orders: the full paginated list of every order/enquiry (not just the dashboard's recent slice). */
 @Component({
-  selector: 'app-dashboard-page',
-  imports: [PageHeaderComponent, StatCardComponent, CurrencyPipe, DatePipe, DecimalPipe],
-  templateUrl: './dashboard-page.component.html',
+  selector: 'app-orders-report-page',
+  imports: [PageHeaderComponent, DatePipe, CurrencyPipe, DecimalPipe, ReactiveFormsModule],
+  templateUrl: './orders-report-page.component.html',
 })
-export class DashboardPageComponent implements OnInit {
+export class OrdersReportPageComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
   protected readonly store = inject(DashboardStore);
-  protected readonly auth = inject(AuthService);
   protected readonly statusStore = inject(EnquiryStatusStore);
   private readonly dashboardService = inject(DashboardService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly dialog = inject(MatDialog);
 
-  /** Statuses for the dropdown, in admin-defined display order. */
   protected readonly statuses = computed(() => this.statusStore.statuses().map((s) => s.name));
 
-  protected readonly isAdmin = computed(() => this.auth.hasRole('Admin'));
+  protected readonly pageSizeOptions = ORDERS_REPORT_PAGE_SIZE_OPTIONS;
 
-  protected readonly pageSizeOptions = ENQUIRY_PAGE_SIZE_OPTIONS;
+  protected readonly filterForm = this.fb.nonNullable.group({
+    status: [''],
+    fromDate: [''],
+    toDate: [''],
+  });
 
   protected readonly totalPages = computed(() => {
     const size = this.store.pageSize();
@@ -49,9 +54,22 @@ export class DashboardPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.store.load();
-    this.store.loadEnquiries(0, ENQUIRY_PAGE_SIZE_OPTIONS[0]);
+    this.store.loadEnquiries(0, ORDERS_REPORT_PAGE_SIZE_OPTIONS[0]);
     this.statusStore.load();
+  }
+
+  applyFilters(): void {
+    const { status, fromDate, toDate } = this.filterForm.getRawValue();
+    this.store.setFilters({
+      status: status || null,
+      fromDate: fromDate || null,
+      toDate: toDate || null,
+    });
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset({ status: '', fromDate: '', toDate: '' });
+    this.store.setFilters({ status: null, fromDate: null, toDate: null });
   }
 
   onPageSizeChange(pageSize: number): void {
@@ -78,13 +96,33 @@ export class DashboardPageComponent implements OnInit {
     return contrastTextColor(this.statusColor(status));
   }
 
-  /** Status names are admin-set free text now — no separate label lookup needed. */
   statusLabel(status: EnquiryStatus): string {
     return status;
   }
 
   attachmentUrl(enquiry: RecentEnquiry): string | null {
     return resolveAssetUrl(enquiry.attachmentUrl);
+  }
+
+  onStatusChange(enquiry: RecentEnquiry, status: string, selectEl: HTMLSelectElement): void {
+    const newStatus = status as EnquiryStatus;
+    if (newStatus === enquiry.status) {
+      return;
+    }
+
+    this.confirmDialog
+      .confirm({
+        title: 'Change status?',
+        message: `Change "${enquiry.student}"'s enquiry status from ${this.statusLabel(enquiry.status)} to ${this.statusLabel(newStatus)}?`,
+        confirmText: 'Change status',
+      })
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.store.updateEnquiryStatus(enquiry.id, newStatus);
+        } else {
+          selectEl.value = enquiry.status;
+        }
+      });
   }
 
   viewHistory(enquiry: RecentEnquiry): void {

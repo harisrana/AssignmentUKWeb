@@ -43,6 +43,12 @@ export const FEATURE_ROUTES: Routes = [
       import('./configuration/configuration.routes').then((m) => m.CONFIGURATION_ROUTES),
   },
   {
+    path: 'reports',
+    data: { breadcrumb: 'Reports', roles: [ROLES.admin, ROLES.manager] },
+    canActivate: [roleGuard],
+    loadChildren: () => import('./reports/reports.routes').then((m) => m.REPORTS_ROUTES),
+  },
+  {
     path: 'chat',
     data: { breadcrumb: 'Live Chat', permissions: [PERMISSIONS.chatManage] },
     canActivate: [permissionGuard],

@@ -22,6 +22,10 @@ export class DashboardStore {
   readonly pageSize = signal(DEFAULT_PAGE_SIZE);
   readonly enquiriesLoading = signal(false);
 
+  readonly statusFilter = signal<string | null>(null);
+  readonly fromDateFilter = signal<string | null>(null);
+  readonly toDateFilter = signal<string | null>(null);
+
   load(): void {
     this.loading.set(true);
     this.service.getStats().subscribe({
@@ -33,19 +37,39 @@ export class DashboardStore {
     });
   }
 
-  /** Fetches a page of enquiries from the server. Pass pageIndex/pageSize to change page or page size; omit to reload the current page. */
+  /** Fetches a page of enquiries from the server, reusing the current status/date filters. Pass pageIndex/pageSize to change page or page size; omit to reload the current page. */
   loadEnquiries(pageIndex = this.pageIndex(), pageSize = this.pageSize()): void {
     this.enquiriesLoading.set(true);
-    this.service.getEnquiries(pageIndex, pageSize).subscribe({
-      next: (result) => {
-        this.enquiries.set(result.items);
-        this.totalCount.set(result.totalCount);
-        this.pageIndex.set(result.pageIndex);
-        this.pageSize.set(result.pageSize);
-        this.enquiriesLoading.set(false);
-      },
-      error: () => this.enquiriesLoading.set(false),
-    });
+    this.service
+      .getEnquiries(pageIndex, pageSize, {
+        status: this.statusFilter(),
+        fromDate: this.fromDateFilter(),
+        toDate: this.toDateFilter(),
+      })
+      .subscribe({
+        next: (result) => {
+          this.enquiries.set(result.items);
+          this.totalCount.set(result.totalCount);
+          this.pageIndex.set(result.pageIndex);
+          this.pageSize.set(result.pageSize);
+          this.enquiriesLoading.set(false);
+        },
+        error: () => this.enquiriesLoading.set(false),
+      });
+  }
+
+  /** Applies new status/date filters and reloads from page 0. Omitted keys keep their current value. */
+  setFilters(filters: { status?: string | null; fromDate?: string | null; toDate?: string | null }): void {
+    if ('status' in filters) {
+      this.statusFilter.set(filters.status ?? null);
+    }
+    if ('fromDate' in filters) {
+      this.fromDateFilter.set(filters.fromDate ?? null);
+    }
+    if ('toDate' in filters) {
+      this.toDateFilter.set(filters.toDate ?? null);
+    }
+    this.loadEnquiries(0, this.pageSize());
   }
 
   updateEnquiryStatus(id: string, status: EnquiryStatus): void {

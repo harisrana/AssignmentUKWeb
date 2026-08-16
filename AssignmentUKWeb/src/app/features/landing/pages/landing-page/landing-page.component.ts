@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { LiveChatWidgetService } from '../../../../core/services/live-chat-widget.service';
 import { ExpertWriter, Faq, Guarantee, ProcessStep } from '../../models/landing.model';
@@ -9,7 +10,7 @@ import { ExpertWriter, Faq, Guarantee, ProcessStep } from '../../models/landing.
  */
 @Component({
   selector: 'app-landing-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './landing-page.component.html',
 })
 export class LandingPageComponent {

@@ -11,8 +11,18 @@ export class DashboardService extends BaseApiService {
     return this.get<DashboardStats>(API_ENDPOINTS.dashboard.stats);
   }
 
-  getEnquiries(pageIndex: number, pageSize: number): Observable<PagedResult<RecentEnquiry>> {
-    return this.get<PagedResult<RecentEnquiry>>(API_ENDPOINTS.dashboard.enquiries, { pageIndex, pageSize });
+  getEnquiries(
+    pageIndex: number,
+    pageSize: number,
+    filters?: { status?: string | null; fromDate?: string | null; toDate?: string | null },
+  ): Observable<PagedResult<RecentEnquiry>> {
+    return this.get<PagedResult<RecentEnquiry>>(API_ENDPOINTS.dashboard.enquiries, {
+      pageIndex,
+      pageSize,
+      status: filters?.status,
+      fromDate: filters?.fromDate,
+      toDate: filters?.toDate,
+    });
   }
 
   updateEnquiryStatus(id: string, status: EnquiryStatus): Observable<{ status: EnquiryStatus }> {

@@ -8,6 +8,11 @@ export interface RecentEnquiry {
   student: string;
   status: EnquiryStatus;
   submittedDate: string;
+  words: number;
+  estimatedTotal: number;
+  currency: string;
+  discountPercentage: number | null;
+  discountRuleName: string | null;
   assignedToUserId: string | null;
   assignedToName: string | null;
   attachmentUrl: string | null;

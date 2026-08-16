@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -9,26 +10,10 @@ import { PricingRule } from '../../../../core/models/pricing-rule.model';
 const PACKAGE_OPTIONS = ['Standard', 'Premium', 'Platinum'];
 const ACADEMIC_LEVEL_OPTIONS = ['Undergraduate', "Master's", 'PhD'];
 
-interface NewRuleForm {
-  name: string;
-  packageName: string;
-  academicLevel: string;
-  minPages: number | null;
-  discountPercentage: number;
-}
-
-const EMPTY_FORM: NewRuleForm = {
-  name: '',
-  packageName: '',
-  academicLevel: '',
-  minPages: null,
-  discountPercentage: 0,
-};
-
 /** Admin-only pricing/discount rule management — Configuration → Add Rule. */
 @Component({
   selector: 'app-pricing-rules-page',
-  imports: [FormsModule, PageHeaderComponent],
+  imports: [ReactiveFormsModule, PageHeaderComponent, DecimalPipe],
   template: `
     <app-page-header title="Add Rule" subtitle="Manage discount rules applied to order pricing." />
 
@@ -44,7 +29,7 @@ const EMPTY_FORM: NewRuleForm = {
                 <p class="font-semibold text-brand-navy">{{ rule.name }}</p>
                 <p class="text-xs text-secondary">
                   {{ rule.packageName ?? 'Any package' }} · {{ rule.academicLevel ?? 'Any level' }}
-                  @if (rule.minPages) { · Min {{ rule.minPages }} pages }
+                  @if (rule.minWords) { · Min {{ rule.minWords | number }} words }
                 </p>
               </div>
               <span class="px-2.5 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-bold shrink-0">
@@ -78,12 +63,12 @@ const EMPTY_FORM: NewRuleForm = {
       <section class="bg-surface-container-lowest rounded-2xl shadow-custom p-6">
         <h3 class="font-bold text-brand-navy mb-4">Add Rule</h3>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form [formGroup]="ruleForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-secondary">Rule name</label>
             <input
               type="text"
-              [(ngModel)]="form.name"
+              formControlName="name"
               placeholder="e.g. Platinum bulk discount"
               class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-brand-orange rounded-lg px-3 py-2.5 text-sm text-brand-navy outline-none"
             />
@@ -94,14 +79,14 @@ const EMPTY_FORM: NewRuleForm = {
               type="number"
               min="0"
               max="100"
-              [(ngModel)]="form.discountPercentage"
+              formControlName="discountPercentage"
               class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-brand-orange rounded-lg px-3 py-2.5 text-sm text-brand-navy outline-none"
             />
           </div>
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-secondary">Package (optional)</label>
             <select
-              [(ngModel)]="form.packageName"
+              formControlName="packageName"
               class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2.5 text-sm text-brand-navy outline-none"
             >
               <option value="">Any package</option>
@@ -113,7 +98,7 @@ const EMPTY_FORM: NewRuleForm = {
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-secondary">Academic level (optional)</label>
             <select
-              [(ngModel)]="form.academicLevel"
+              formControlName="academicLevel"
               class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2.5 text-sm text-brand-navy outline-none"
             >
               <option value="">Any level</option>
@@ -123,21 +108,22 @@ const EMPTY_FORM: NewRuleForm = {
             </select>
           </div>
           <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-secondary">Minimum pages (optional)</label>
+            <label class="text-xs font-semibold text-secondary">Minimum words (optional)</label>
             <input
               type="number"
               min="0"
-              [(ngModel)]="form.minPages"
+              step="50"
+              formControlName="minWords"
               placeholder="No minimum"
               class="w-full bg-surface-container-low border border-outline-variant/30 focus:border-brand-orange rounded-lg px-3 py-2.5 text-sm text-brand-navy outline-none"
             />
           </div>
-        </div>
+        </form>
 
         <button
           type="button"
           (click)="add()"
-          [disabled]="!form.name.trim()"
+          [disabled]="ruleForm.invalid"
           class="mt-4 px-5 py-2.5 rounded-lg bg-brand-orange text-white text-sm font-bold disabled:opacity-50"
         >
           Add Rule
@@ -147,6 +133,7 @@ const EMPTY_FORM: NewRuleForm = {
   `,
 })
 export class PricingRulesPageComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
   private readonly service = inject(PricingRuleService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly notify = inject(NotificationService);
@@ -154,7 +141,14 @@ export class PricingRulesPageComponent implements OnInit {
   protected readonly rules = signal<PricingRule[]>([]);
   protected readonly packageOptions = PACKAGE_OPTIONS;
   protected readonly academicLevelOptions = ACADEMIC_LEVEL_OPTIONS;
-  protected form: NewRuleForm = { ...EMPTY_FORM };
+
+  protected readonly ruleForm = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    discountPercentage: [0],
+    packageName: [''],
+    academicLevel: [''],
+    minWords: this.fb.control<number | null>(null),
+  });
 
   ngOnInit(): void {
     this.load();
@@ -165,22 +159,24 @@ export class PricingRulesPageComponent implements OnInit {
   }
 
   add(): void {
-    const name = this.form.name.trim();
-    if (!name) {
+    if (this.ruleForm.invalid) {
+      this.ruleForm.markAllAsTouched();
       return;
     }
 
+    const { name, packageName, academicLevel, minWords, discountPercentage } = this.ruleForm.getRawValue();
+
     this.service
       .create({
-        name,
-        packageName: this.form.packageName || null,
-        academicLevel: this.form.academicLevel || null,
-        minPages: this.form.minPages,
-        discountPercentage: this.form.discountPercentage,
+        name: name.trim(),
+        packageName: packageName || null,
+        academicLevel: academicLevel || null,
+        minWords,
+        discountPercentage,
       })
       .subscribe({
         next: () => {
-          this.form = { ...EMPTY_FORM };
+          this.ruleForm.reset({ name: '', discountPercentage: 0, packageName: '', academicLevel: '', minWords: null });
           this.load();
           this.notify.success('Rule added.');
         },
@@ -194,7 +190,7 @@ export class PricingRulesPageComponent implements OnInit {
         name: rule.name,
         packageName: rule.packageName,
         academicLevel: rule.academicLevel,
-        minPages: rule.minPages,
+        minWords: rule.minWords,
         discountPercentage: rule.discountPercentage,
         isActive: !rule.isActive,
       })
