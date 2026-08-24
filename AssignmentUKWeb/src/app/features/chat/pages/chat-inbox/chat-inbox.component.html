@@ -1,0 +1,94 @@
+<app-page-header title="Live Chat" subtitle="Reply to visitors chatting on the public site in real time." />
+
+@if (liveUpdatesError()) {
+  <div class="mb-4 px-4 py-3 rounded-xl bg-error-container text-on-error-container text-sm">
+    Live updates are unavailable right now (couldn't connect to the chat server). The session list below still works, but new messages won't appear until you refresh.
+  </div>
+}
+
+<div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 h-[calc(100vh-220px)] min-h-[420px]">
+  <!-- Session list -->
+  <div class="bg-white rounded-2xl shadow-custom border border-outline-variant/10 overflow-y-auto">
+    @if (loading()) {
+      <p class="p-4 text-sm text-secondary">Loading sessions…</p>
+    } @else if (sessions().length === 0) {
+      <p class="p-4 text-sm text-secondary">No active conversations right now.</p>
+    } @else {
+      @for (session of sessions(); track session.id) {
+        <div
+          role="button"
+          tabindex="0"
+          (click)="selectSession(session)"
+          (keydown.enter)="selectSession(session)"
+          class="w-full text-left p-4 border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors flex items-start justify-between gap-2 cursor-pointer"
+          [class.bg-surface-container-low]="selectedSessionId() === session.id"
+        >
+          <div class="min-w-0 flex items-center gap-2">
+            @if (unreadCounts()[session.id]; as unread) {
+              <span class="shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-brand-orange text-white text-[11px] font-bold flex items-center justify-center">
+                {{ unread > 9 ? '9+' : unread }}
+              </span>
+            }
+            <div class="min-w-0">
+              <p class="font-bold text-sm text-brand-navy truncate" [class.font-extrabold]="unreadCounts()[session.id]">
+                {{ session.visitorName || 'Anonymous visitor' }}
+              </p>
+              <p class="text-xs text-secondary">{{ session.lastMessageAt | date: 'short' }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="closeSession(session, $event)"
+            class="material-symbols-outlined text-secondary hover:text-error text-lg shrink-0"
+            title="Close conversation"
+            aria-label="Close conversation"
+          >close</button>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Transcript -->
+  <div class="bg-white rounded-2xl shadow-custom border border-outline-variant/10 flex flex-col overflow-hidden">
+    @if (!selectedSessionId()) {
+      <div class="flex-1 flex items-center justify-center text-secondary text-sm">Select a conversation to view messages.</div>
+    } @else {
+      <div #scrollContainer class="flex-1 overflow-y-auto p-4 space-y-3 bg-surface-container-low">
+        @for (message of transcript(); track message.id) {
+          <div class="flex" [class.justify-end]="message.senderType === 'Agent'">
+            <div class="max-w-[70%]">
+              <p
+                class="rounded-xl px-3 py-2 text-sm"
+                [class.bg-brand-orange]="message.senderType === 'Agent'"
+                [class.text-white]="message.senderType === 'Agent'"
+                [class.bg-white]="message.senderType === 'Visitor'"
+                [class.text-brand-navy]="message.senderType === 'Visitor'"
+                [class.shadow-custom]="message.senderType === 'Visitor'"
+              >{{ message.text }}</p>
+              <p class="text-[10px] text-secondary mt-1" [class.text-right]="message.senderType === 'Agent'">
+                {{ message.senderName || message.senderType }} · {{ message.createdDate | date: 'shortTime' }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <form (ngSubmit)="sendReply()" class="flex items-center gap-2 p-3 border-t border-outline-variant/10">
+        <input
+          type="text"
+          [(ngModel)]="draft"
+          name="draft"
+          placeholder="Type a reply…"
+          class="flex-1 bg-surface-container-low border border-outline-variant/30 rounded-full px-4 py-2 text-sm text-brand-navy outline-none focus:ring-2 focus:ring-brand-orange"
+        />
+        <button
+          type="submit"
+          [disabled]="!draft().trim()"
+          class="w-10 h-10 rounded-full bg-brand-orange text-white flex items-center justify-center disabled:opacity-40 hover:scale-105 transition-transform"
+        >
+          <span class="material-symbols-outlined text-lg">send</span>
+        </button>
+      </form>
+    }
+  </div>
+</div>

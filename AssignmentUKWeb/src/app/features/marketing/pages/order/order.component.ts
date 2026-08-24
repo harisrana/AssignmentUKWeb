@@ -1,0 +1,197 @@
+import { Component, ViewChild, computed, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
+import { PriceEstimateService } from '../../../../core/services/price-estimate.service';
+import { PricingRuleQuote } from '../../../../core/models/price-estimate.model';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { FileService } from '../../../../core/services/file.service';
+import { FileUploadResult } from '../../../../core/models/file.model';
+import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
+
+interface PricingTier {
+  name: string;
+  pricePer500Words: number;
+  featured: boolean;
+  features: string[];
+}
+
+@Component({
+  selector: 'app-order',
+  imports: [ReactiveFormsModule, DecimalPipe, FileUploadComponent],
+  templateUrl: './order.component.html',
+})
+export class OrderComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly priceEstimateService = inject(PriceEstimateService);
+  private readonly fileService = inject(FileService);
+  private readonly notify = inject(NotificationService);
+
+  protected readonly tiers: PricingTier[] = [
+    {
+      name: 'Standard',
+      pricePer500Words: 12,
+      featured: false,
+      features: ['2:2 standard writer', '7-day delivery', 'Free Turnitin report', 'Unlimited revisions'],
+    },
+    {
+      name: 'Premium',
+      pricePer500Words: 18,
+      featured: true,
+      features: ['2:1 expert writer', '3-day delivery', 'Free Turnitin report', 'Priority support', 'Plagiarism guarantee'],
+    },
+    {
+      name: 'Platinum',
+      pricePer500Words: 26,
+      featured: false,
+      features: ['First-class PhD writer', '24-hour delivery', 'Free Turnitin report', 'Dedicated manager', 'Top-grade guarantee'],
+    },
+  ];
+
+  protected readonly levels = [
+    { label: 'Undergraduate', multiplier: 1 },
+    { label: "Master's", multiplier: 1.3 },
+    { label: 'PhD', multiplier: 1.6 },
+  ];
+
+  protected readonly countries = [
+    'United Kingdom', 'United States', 'Canada', 'Australia', 'Ireland',
+    'New Zealand', 'Pakistan', 'India', 'United Arab Emirates', 'Other',
+  ];
+
+  protected readonly form = this.fb.nonNullable.group({
+    pages: [5],
+    level: [1],
+    tier: [18],
+  });
+
+  protected readonly orderForm = this.fb.nonNullable.group({
+    details: [''],
+    fullName: ['', [Validators.required, Validators.maxLength(200)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
+    mobileNo: ['', [Validators.required, Validators.pattern(/^[0-9]+$/), Validators.maxLength(30)]],
+    country: ['', [Validators.required]],
+  });
+
+  protected readonly submitting = signal(false);
+  protected readonly attachedFile = signal<File | null>(null);
+
+  @ViewChild(FileUploadComponent) private fileUpload?: FileUploadComponent;
+
+  private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+
+  protected readonly selectedPricePer500Words = computed(() => Number(this.value().tier));
+
+  /** Pricing is per 500-word block — `pages` holds the block count. */
+  protected readonly wordCount = computed(() => (Number(this.value().pages) || 0) * 500);
+
+  protected readonly estimate = computed(() => {
+    const v = this.value();
+    const pages = Number(v.pages) || 0;
+    const level = Number(v.level) || 1;
+    const pricePer500Words = Number(v.tier) || 0;
+    return Math.round(pages * pricePer500Words * level);
+  });
+
+  private readonly selectedTier = computed(() => this.tiers.find((t) => t.pricePer500Words === this.selectedPricePer500Words()));
+
+  private readonly selectedLevel = computed(() => this.levels.find((l) => l.multiplier === Number(this.value().level)));
+
+  /** Live preview of the discount (if any) a matching PricingRule would apply — the actual discount is
+   * always (re)computed server-side at submission time; this is just so the customer can see it upfront. */
+  protected readonly quote = toSignal(
+    toObservable(computed(() => ({
+      packageName: this.selectedTier()?.name ?? 'Standard',
+      academicLevel: this.selectedLevel()?.label ?? 'Undergraduate',
+      words: this.wordCount(),
+    }))).pipe(
+      debounceTime(300),
+      distinctUntilChanged((a, b) => a.packageName === b.packageName && a.academicLevel === b.academicLevel && a.words === b.words),
+      switchMap((q) =>
+        this.priceEstimateService.getQuote(q.packageName, q.academicLevel, q.words).pipe(
+          catchError(() => of<PricingRuleQuote>({ discountPercentage: null, ruleName: null })),
+        ),
+      ),
+    ),
+    { initialValue: null },
+  );
+
+  protected readonly discountedEstimate = computed(() => {
+    const discount = this.quote()?.discountPercentage;
+    return discount ? Math.round(this.estimate() * (1 - discount / 100)) : null;
+  });
+
+  blockNonDigit(event: KeyboardEvent): void {
+    if (!/[0-9]/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  stripNonDigits(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = input.value.replace(/\D/g, '');
+    if (digitsOnly !== input.value) {
+      this.orderForm.controls.mobileNo.setValue(digitsOnly);
+    }
+  }
+
+  onFileSelected(files: File[]): void {
+    this.attachedFile.set(files[0] ?? null);
+  }
+
+  choosePackage(tier: PricingTier): void {
+    this.form.controls.tier.setValue(tier.pricePer500Words);
+    document.getElementById('estimate-calculator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  submitOrder(): void {
+    if (this.orderForm.invalid) {
+      this.orderForm.markAllAsTouched();
+      return;
+    }
+
+    const words = this.wordCount();
+    const pricePer500Words = this.selectedPricePer500Words();
+    const tier = this.selectedTier();
+    const level = this.selectedLevel();
+    const order = this.orderForm.getRawValue();
+
+    const file = this.attachedFile();
+
+    this.submitting.set(true);
+    (file ? this.fileService.upload(file) : of<FileUploadResult | null>(null))
+      .pipe(
+        switchMap((uploaded) =>
+          this.priceEstimateService.submit({
+            details: order.details,
+            fullName: order.fullName,
+            email: order.email,
+            mobileNo: order.mobileNo,
+            country: order.country,
+            words,
+            academicLevel: level?.label ?? 'Undergraduate',
+            packageName: tier?.name ?? 'Standard',
+            pricePerPage: pricePer500Words,
+            estimatedTotal: this.estimate(),
+            currency: 'GBP',
+            attachmentUrl: uploaded?.url ?? null,
+            attachmentFileName: uploaded?.fileName ?? null,
+          }),
+        ),
+      )
+      .subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.notify.success('Your order request has been submitted. We will contact you shortly.');
+          this.orderForm.reset();
+          this.attachedFile.set(null);
+          this.fileUpload?.reset();
+        },
+        error: () => {
+          this.submitting.set(false);
+          this.notify.error('Something went wrong. Please try again.');
+        },
+      });
+  }
+}

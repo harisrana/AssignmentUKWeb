@@ -3,6 +3,21 @@ import { environment } from '../../../environments/environment';
 /** The API is versioned via the URL path: `/api/v1/...`. */
 const base = `${environment.apiUrl}/${environment.apiVersion}`;
 
+/** Origin the API is served from (apiUrl minus its trailing `/api` path), used to resolve server-relative asset URLs like avatars. */
+const apiOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+
+/**
+ * Resolves a server-relative asset path (e.g. `/uploads/xyz.png`) into an
+ * absolute URL. Passes already-absolute URLs and `data:` URIs (e.g. avatars,
+ * which the API returns as base64) through unchanged.
+ */
+export function resolveAssetUrl(path?: string | null): string | null {
+  if (!path) {
+    return null;
+  }
+  return /^(https?:|data:)/i.test(path) ? path : `${apiOrigin}${path}`;
+}
+
 /**
  * Centralised registry of every API endpoint used by the app.
  * Never hard-code URLs in services — reference them here.
@@ -35,8 +50,38 @@ export const API_ENDPOINTS = {
   },
   dashboard: {
     stats: `${base}/dashboard/stats`,
+    enquiries: `${base}/dashboard/enquiries`,
   },
   files: {
     upload: `${base}/files/upload`,
+  },
+  priceEstimates: {
+    root: `${base}/price-estimates`,
+    quote: `${base}/price-estimates/quote`,
+    status: (id: string) => `${base}/price-estimates/${id}/status`,
+    statusHistory: (id: string) => `${base}/price-estimates/${id}/status-history`,
+  },
+  enquiryStatuses: {
+    root: `${base}/enquiry-statuses`,
+    byId: (id: string) => `${base}/enquiry-statuses/${id}`,
+    moveUp: (id: string) => `${base}/enquiry-statuses/${id}/move-up`,
+    moveDown: (id: string) => `${base}/enquiry-statuses/${id}/move-down`,
+  },
+  pricingRules: {
+    root: `${base}/pricing-rules`,
+    byId: (id: string) => `${base}/pricing-rules/${id}`,
+  },
+  announcements: {
+    root: `${base}/announcements`,
+    active: `${base}/announcements/active`,
+    byId: (id: string) => `${base}/announcements/${id}`,
+  },
+  chat: {
+    sessions: `${base}/chat/sessions`,
+    messages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/messages`,
+    agentMessages: (sessionId: string) => `${base}/chat/sessions/${sessionId}/agent-messages`,
+    visitorName: (sessionId: string) => `${base}/chat/sessions/${sessionId}/visitor-name`,
+    close: (sessionId: string) => `${base}/chat/sessions/${sessionId}/close`,
+    hub: `${apiOrigin}/hubs/chat`,
   },
 } as const;

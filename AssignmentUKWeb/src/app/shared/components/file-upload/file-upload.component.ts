@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, input, output, signal } from '@angular/core';
 import { NotificationService } from '../../../core/services/notification.service';
 import { APP_CONSTANTS } from '../../../core/constants/app.constants';
 
@@ -35,11 +35,22 @@ import { APP_CONSTANTS } from '../../../core/constants/app.constants';
       <ul class="mt-4 space-y-2">
         @for (file of files(); track file.name) {
           <li class="flex items-center justify-between bg-surface-container-low rounded-lg px-3 py-2 text-sm">
-            <span class="flex items-center gap-2 text-brand-navy">
-              <span class="material-symbols-outlined text-base">description</span>
-              {{ file.name }}
+            <span class="flex items-center gap-2 text-brand-navy min-w-0">
+              <span class="material-symbols-outlined text-base shrink-0">description</span>
+              <span class="truncate">{{ file.name }}</span>
             </span>
-            <span class="text-secondary">{{ (file.size / 1024).toFixed(0) }} KB</span>
+            <span class="flex items-center gap-2 shrink-0">
+              <span class="text-secondary">{{ (file.size / 1024).toFixed(0) }} KB</span>
+              <button
+                type="button"
+                (click)="removeFile(file, $event)"
+                class="p-1 rounded-full text-secondary hover:text-error hover:bg-error/10"
+                [attr.aria-label]="'Remove ' + file.name"
+                title="Remove"
+              >
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </span>
           </li>
         }
       </ul>
@@ -48,6 +59,8 @@ import { APP_CONSTANTS } from '../../../core/constants/app.constants';
 })
 export class FileUploadComponent {
   private readonly notify = inject(NotificationService);
+
+  @ViewChild('input') private inputRef?: ElementRef<HTMLInputElement>;
 
   readonly accept = input(APP_CONSTANTS.acceptedUploadTypes.join(','));
   readonly maxSizeMb = input(APP_CONSTANTS.maxUploadSizeMb);
@@ -70,6 +83,24 @@ export class FileUploadComponent {
 
   onSelect(event: Event): void {
     this.handle((event.target as HTMLInputElement).files);
+  }
+
+  reset(): void {
+    this.files.set([]);
+    if (this.inputRef) {
+      this.inputRef.nativeElement.value = '';
+    }
+  }
+
+  removeFile(file: File, event: Event): void {
+    event.stopPropagation();
+    const next = this.files().filter((f) => f !== file);
+    this.files.set(next);
+    this.filesSelected.emit(next);
+    if (next.length === 0 && this.inputRef) {
+      // Clear the native input too, so re-selecting the same file still fires a change event.
+      this.inputRef.nativeElement.value = '';
+    }
   }
 
   private handle(list: FileList | null | undefined): void {

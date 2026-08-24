@@ -9,6 +9,7 @@ import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ProfileService } from '../../../../core/services/profile.service';
+import { resolveAssetUrl } from '../../../../core/constants/api-endpoints';
 
 /**
  * Profile page with a reactive form. Implements CanComponentDeactivate so the
@@ -42,11 +43,14 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   });
 
   protected readonly canSave = computed(() => this.form.dirty || this.selectedAvatarFile() !== null);
+  protected readonly avatarUrl = computed(() => resolveAssetUrl(this.auth.user()?.avatarUrl));
 
   onAvatarSelected(files: File[]): void {
     if (files.length) {
       this.selectedAvatarFile.set(files[0]);
       this.notify.info(`Selected ${files[0].name} — it will upload when you save.`);
+    } else {
+      this.selectedAvatarFile.set(null);
     }
   }
 

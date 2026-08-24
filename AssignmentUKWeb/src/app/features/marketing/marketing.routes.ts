@@ -32,4 +32,10 @@ export const MARKETING_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/pricing/pricing.component').then((m) => m.PricingComponent),
   },
+  {
+    path: 'order',
+    title: 'Order Now • Assignment Writings UK',
+    loadComponent: () =>
+      import('./pages/order/order.component').then((m) => m.OrderComponent),
+  },
 ];

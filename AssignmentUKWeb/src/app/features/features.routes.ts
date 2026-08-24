@@ -36,9 +36,27 @@ export const FEATURE_ROUTES: Routes = [
       import('./permissions/permissions.routes').then((m) => m.PERMISSIONS_ROUTES),
   },
   {
-    path: 'settings',
-    data: { breadcrumb: 'Settings', permissions: [PERMISSIONS.settingsManage] },
+    path: 'configuration',
+    data: { breadcrumb: 'Configuration', roles: [ROLES.admin, ROLES.manager] },
+    canActivate: [roleGuard],
+    loadChildren: () =>
+      import('./configuration/configuration.routes').then((m) => m.CONFIGURATION_ROUTES),
+  },
+  {
+    path: 'reports',
+    data: { breadcrumb: 'Reports', roles: [ROLES.admin, ROLES.manager] },
+    canActivate: [roleGuard],
+    loadChildren: () => import('./reports/reports.routes').then((m) => m.REPORTS_ROUTES),
+  },
+  {
+    path: 'chat',
+    data: { breadcrumb: 'Live Chat', permissions: [PERMISSIONS.chatManage] },
     canActivate: [permissionGuard],
+    loadChildren: () => import('./chat/chat.routes').then((m) => m.CHAT_ROUTES),
+  },
+  {
+    path: 'settings',
+    data: { breadcrumb: 'Settings' },
     loadChildren: () => import('./settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
   },
   {

@@ -1,6 +1,14 @@
-import { Component, HostListener, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { SERVICES } from '../../core/constants/services.constant';
+import { AuthService } from '../../core/services/auth.service';
+import { AuthActions } from '../../features/auth/state/auth.actions';
+import { resolveAssetUrl } from '../../core/constants/api-endpoints';
+import { LiveChatComponent } from '../../shared/components/live-chat/live-chat.component';
+import { AnnouncementBarComponent } from '../../shared/components/announcement-bar/announcement-bar.component';
 
 /**
  * Public marketing "master page": fixed top utility bar, sticky navbar (with a
@@ -9,14 +17,23 @@ import { SERVICES } from '../../core/constants/services.constant';
  */
 @Component({
   selector: 'app-public-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatMenuModule, MatDividerModule, LiveChatComponent, AnnouncementBarComponent],
   templateUrl: './public-layout.component.html',
 })
 export class PublicLayoutComponent {
+  private readonly store = inject(Store);
+
+  protected readonly auth = inject(AuthService);
   protected readonly services = SERVICES;
   protected readonly servicesOpen = signal(false);
   protected readonly mobileOpen = signal(false);
   protected readonly year = new Date().getFullYear();
+  protected readonly avatarUrl = computed(() => resolveAssetUrl(this.auth.user()?.avatarUrl));
+
+  logout(): void {
+    this.store.dispatch(AuthActions.logout());
+    this.closeMenus();
+  }
 
   toggleServices(): void {
     this.servicesOpen.update((v) => !v);

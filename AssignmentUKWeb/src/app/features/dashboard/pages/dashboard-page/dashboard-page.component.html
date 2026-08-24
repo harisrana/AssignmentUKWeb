@@ -1,72 +1,169 @@
 <app-page-header
   [title]="'Welcome back, ' + (auth.user()?.firstName ?? 'there') + ' 👋'"
-  subtitle="Here's what's happening across your assignments today."
+  [subtitle]="isAdmin() ? 'Here\'s what\'s happening across your assignments today.' : 'Here\'s what\'s on your plate today.'"
 />
 
 <!-- KPI cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
   <app-stat-card
     icon="assignment"
-    [value]="(store.stats()?.totalOrders ?? 0) | number"
-    label="Total Orders"
-    trend="12.4%"
+    [value]="(store.stats()?.totalEnquiries ?? 0) | number"
+    [label]="isAdmin() ? 'Total Enquiries' : 'My Enquiries'"
     iconBgClass="bg-brand-orange"
   />
+  @if (isAdmin()) {
+    <app-stat-card
+      icon="groups"
+      [value]="(store.stats()?.activeUsers ?? 0) | number"
+      label="Active Users"
+      iconBgClass="bg-brand-navy"
+    />
+    <app-stat-card
+      icon="payments"
+      [value]="((store.stats()?.estimatedRevenueLast30Days ?? 0) | currency: (store.stats()?.currency ?? 'GBP') : 'symbol' : '1.0-0') ?? '£0'"
+      label="Est. Revenue (30d)"
+      iconBgClass="bg-green-600"
+    />
+  }
   <app-stat-card
-    icon="groups"
-    [value]="(store.stats()?.activeWriters ?? 0) | number"
-    label="Active Writers"
-    trend="3.1%"
-    iconBgClass="bg-brand-navy"
-  />
-  <app-stat-card
-    icon="payments"
-    [value]="((store.stats()?.revenue ?? 0) | currency: 'GBP' : 'symbol' : '1.0-0') ?? '£0'"
-    label="Revenue (30d)"
-    trend="8.7%"
-    iconBgClass="bg-green-600"
-  />
-  <app-stat-card
-    icon="sentiment_very_satisfied"
-    [value]="(store.stats()?.satisfaction ?? 0) + '%'"
-    label="Satisfaction"
-    trend="0.4%"
+    icon="mark_email_unread"
+    [value]="(store.stats()?.newEnquiriesLast7Days ?? 0) | number"
+    [label]="isAdmin() ? 'New Enquiries (7d)' : 'New (7d)'"
     iconBgClass="bg-purple-600"
   />
 </div>
 
-<!-- Recent orders -->
+<!-- Recent enquiries: admins now use Reports → All Orders instead -->
+@if (!isAdmin()) {
 <div class="bg-surface-container-lowest rounded-2xl shadow-custom border border-outline-variant/10 overflow-hidden">
   <div class="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-    <h2 class="font-bold text-brand-navy">Recent Orders</h2>
-    <a class="text-sm font-bold text-primary hover:underline" href="#">View all</a>
+    <h2 class="font-bold text-brand-navy">My Enquiries</h2>
   </div>
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-secondary border-b border-outline-variant/20">
-          <th class="px-6 py-3 font-semibold">Order ID</th>
+          <th class="px-6 py-3 font-semibold">Reference</th>
           <th class="px-6 py-3 font-semibold">Subject</th>
           <th class="px-6 py-3 font-semibold">Student</th>
+          <th class="px-6 py-3 font-semibold">Words</th>
+          <th class="px-6 py-3 font-semibold">Amount</th>
+          <th class="px-6 py-3 font-semibold">Discount</th>
           <th class="px-6 py-3 font-semibold">Status</th>
-          <th class="px-6 py-3 font-semibold">Due</th>
+          <th class="px-6 py-3 font-semibold">Attachment</th>
+          <th class="px-6 py-3 font-semibold">Submitted</th>
+          <th class="px-6 py-3 font-semibold"></th>
         </tr>
       </thead>
       <tbody>
-        @for (order of store.recentOrders(); track order.id) {
+        @for (enquiry of store.enquiries(); track enquiry.id) {
           <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low">
-            <td class="px-6 py-4 font-bold text-brand-navy">{{ order.id }}</td>
-            <td class="px-6 py-4">{{ order.subject }}</td>
-            <td class="px-6 py-4 text-secondary">{{ order.student }}</td>
+            <td class="px-6 py-4 font-bold text-brand-navy">{{ enquiry.reference }}</td>
+            <td class="px-6 py-4">{{ enquiry.subject }}</td>
+            <td class="px-6 py-4 text-secondary">{{ enquiry.student }}</td>
+            <td class="px-6 py-4 text-secondary">{{ enquiry.words | number }}</td>
+            <td class="px-6 py-4 font-semibold text-brand-navy">{{ enquiry.estimatedTotal | currency: enquiry.currency : 'symbol' : '1.0-2' }}</td>
             <td class="px-6 py-4">
-              <span class="px-2.5 py-1 rounded-full text-xs font-bold" [class]="statusClass(order.status)">
-                {{ order.status }}
+              @if (enquiry.discountPercentage) {
+                <span
+                  class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-bold"
+                  [title]="enquiry.discountRuleName ?? ''"
+                >
+                  {{ enquiry.discountPercentage }}% off
+                </span>
+              } @else {
+                <span class="text-secondary text-xs">—</span>
+              }
+            </td>
+            <td class="px-6 py-4">
+              <span
+                class="px-2.5 py-1 rounded-full text-xs font-bold"
+                [style.background-color]="statusColor(enquiry.status)"
+                [style.color]="statusTextColor(enquiry.status)"
+              >
+                {{ statusLabel(enquiry.status) }}
               </span>
             </td>
-            <td class="px-6 py-4 text-secondary">{{ order.dueDate | date: 'dd MMM yyyy' }}</td>
+            <td class="px-6 py-4">
+              @if (attachmentUrl(enquiry); as url) {
+                <a
+                  [href]="url"
+                  target="_blank"
+                  rel="noopener"
+                  [download]="enquiry.attachmentFileName ?? true"
+                  class="inline-flex items-center gap-1 text-brand-orange hover:underline text-xs font-semibold"
+                  title="Download {{ enquiry.attachmentFileName }}"
+                >
+                  <span class="material-symbols-outlined text-base">attach_file</span>
+                  <span class="max-w-[140px] truncate">{{ enquiry.attachmentFileName ?? 'Download' }}</span>
+                </a>
+              } @else {
+                <span class="text-secondary text-xs">—</span>
+              }
+            </td>
+            <td class="px-6 py-4 text-secondary">{{ enquiry.submittedDate | date: 'dd MMM yyyy' }}</td>
+            <td class="px-6 py-4">
+              <button
+                type="button"
+                class="text-secondary hover:text-brand-orange"
+                title="View status history"
+                (click)="viewHistory(enquiry)"
+              >
+                <span class="material-symbols-outlined text-lg align-middle">history</span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="px-6 py-8 text-center text-secondary">
+              {{ isAdmin() ? 'No enquiries yet.' : "You don't have any enquiries assigned yet." }}
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination -->
+  <div class="px-6 py-3 border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2 text-sm text-secondary">
+      <span>Rows per page:</span>
+      <select
+        class="bg-surface-container-low border border-outline-variant/30 rounded-lg px-2 py-1 text-sm text-brand-navy outline-none focus:ring-2 focus:ring-brand-orange/50"
+        [value]="store.pageSize()"
+        (change)="onPageSizeChange(+$any($event.target).value)"
+      >
+        @for (size of pageSizeOptions; track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+      <span class="ml-2">
+        {{ rangeStart() }}–{{ rangeEnd() }} of {{ store.totalCount() }}
+      </span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        class="p-2 rounded-lg text-secondary hover:text-brand-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent"
+        [disabled]="store.pageIndex() === 0 || store.enquiriesLoading()"
+        (click)="goToPreviousPage()"
+        aria-label="Previous page"
+      >
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <span class="text-sm text-secondary px-2">
+        Page {{ totalPages() === 0 ? 0 : store.pageIndex() + 1 }} of {{ totalPages() }}
+      </span>
+      <button
+        type="button"
+        class="p-2 rounded-lg text-secondary hover:text-brand-navy hover:bg-surface-container disabled:opacity-30 disabled:hover:bg-transparent"
+        [disabled]="store.pageIndex() + 1 >= totalPages() || store.enquiriesLoading()"
+        (click)="goToNextPage()"
+        aria-label="Next page"
+      >
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
 </div>
+}
