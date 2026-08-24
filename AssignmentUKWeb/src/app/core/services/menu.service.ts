@@ -13,6 +13,7 @@ export class MenuService {
 
   private readonly source: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard', permissions: [PERMISSIONS.dashboardView] },
+    { label: 'Live Chat', icon: 'chat', route: '/app/chat', permissions: [PERMISSIONS.chatManage] },
     {
       label: 'Administration',
       icon: 'admin_panel_settings',
@@ -23,7 +24,24 @@ export class MenuService {
         { label: 'Permissions', icon: 'key', route: '/app/permissions', permissions: [PERMISSIONS.permissionsView] },
       ],
     },
-    { label: 'Settings', icon: 'settings', route: '/app/settings', permissions: [PERMISSIONS.settingsManage] },
+    {
+      label: 'Configuration',
+      icon: 'tune',
+      roles: [ROLES.admin, ROLES.manager],
+      children: [
+        { label: 'Add Rule', icon: 'rule', route: '/app/configuration/pricing-rules' },
+        { label: 'Announcements', icon: 'campaign', route: '/app/configuration/announcements' },
+      ],
+    },
+    {
+      label: 'Reports',
+      icon: 'summarize',
+      roles: [ROLES.admin, ROLES.manager],
+      children: [
+        { label: 'All Orders', icon: 'receipt_long', route: '/app/reports/orders' },
+      ],
+    },
+    { label: 'Settings', icon: 'settings', route: '/app/settings' },
     { label: 'My Profile', icon: 'account_circle', route: '/app/profile' },
   ];
 

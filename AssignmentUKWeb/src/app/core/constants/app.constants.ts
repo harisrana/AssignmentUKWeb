@@ -31,4 +31,5 @@ export const PERMISSIONS = {
   permissionsView: 'permissions.view',
   settingsManage: 'settings.manage',
   dashboardView: 'dashboard.view',
+  chatManage: 'chat.manage',
 } as const;
